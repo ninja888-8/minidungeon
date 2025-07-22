@@ -153,14 +153,16 @@ class Game:
                 if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
                     self.level.moveR = True
                 
-                if self.level.map[self.level.roomx][self.level.roomy] == 1 and self.level.can_move_next_stage and event.key == pygame.K_RETURN:
+                if self.level.map[self.level.roomx][self.level.roomy].type == 1 and self.level.map[self.level.roomx][self.level.roomy].cleared and 280 <= self.level.x <= 470 and 280 <= self.level.y <= 470 and not self.level.shopping and event.key == pygame.K_RETURN:
                     self.level.next_stage()
 
-                if (self.level.map[self.level.roomx][self.level.roomy] == 3 and event.key == pygame.K_RETURN):
+                if self.level.shopping and event.key == pygame.K_RETURN:
+                    self.level.shop_select()
+
+                if (self.level.map[self.level.roomx][self.level.roomy].type == 3 and event.key == pygame.K_RETURN):
                     self.level.loot_select()
 
-                if event.key == pygame.K_RETURN and self.level.can_move_next_room() != -1 and self.level.can_move:
-                    self.level.can_move = False
+                if event.key == pygame.K_RETURN and self.level.can_move_next_room() != -1:
                     self.level.next_room()
 
             if event.type == pygame.KEYUP:
@@ -179,7 +181,7 @@ class Game:
                 if event.key == pygame.K_RETURN:
                     self.level.can_move = True
 
-            if (self.level.map[self.level.roomx][self.level.roomy] == 4 or self.level.map[self.level.roomx][self.level.roomy] == 1) and event.type == pygame.MOUSEBUTTONDOWN:
+            if event.type == pygame.MOUSEBUTTONDOWN:
                 self.level.attack()
 
     # deals with user events in the credits screen
