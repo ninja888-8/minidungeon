@@ -17,6 +17,7 @@ UNKNOWN_LOOT = (236, 247, 22)
 UNKNOWN_BATTLE = (252, 99, 91)
 
 bg_default = pygame.image.load(os.path.join("images", "bg_default.png"))
+arrow_default = pygame.image.load(os.path.join("images", "arrow_default.png"))
 person_default = pygame.image.load(os.path.join("images", "person_default.png"))
 enemy_default = pygame.image.load(os.path.join("images", "enemy_default.png"))
 portal_default = pygame.image.load(os.path.join("images", "portal_default.png"))

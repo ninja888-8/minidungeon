@@ -20,6 +20,11 @@ class Game:
         self.level = Level(self.type, stage)
         self.level.generate_rooms()
 
+    # end of the game screen
+    def end_game(self):
+        self.state = 4
+        self.end = End(self.level.stage, self.level.rooms_explored, self.level.gold_earned)
+
     # program loop
     def run(self):
         while self.state != -1:
@@ -36,6 +41,9 @@ class Game:
                 self.playing_events()
                 self.draw_playing()
             elif self.state == 4:
+                self.end_events()
+                self.draw_end()
+            elif self.state == 5:
                 self.credits_events()
                 self.draw_credits()
     
@@ -61,6 +69,12 @@ class Game:
     def draw_playing(self):
         self.screen.fill(BG)
         self.level.draw_bg(self.screen)
+        pygame.display.flip()
+
+    # draws the end game screen
+    def draw_end(self):
+        self.screen.fill(BG)
+        self.end.draw_bg(self.screen)
         pygame.display.flip()
 
     # draws the credits screen
@@ -92,7 +106,7 @@ class Game:
                     elif self.menu.option == 1:
                         self.state = 2
                     elif self.menu.option == 2:
-                        self.state = 4
+                        self.state = 5
                     elif self.menu.option == 3:
                         pygame.quit()
                         quit(0)
@@ -135,6 +149,9 @@ class Game:
 
     # deals with user events in the game
     def playing_events(self):
+        if self.level.lives <= 0:
+            self.end_game()
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -184,6 +201,17 @@ class Game:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 self.level.attack()
 
+    # deals with user events in the end game screen
+    def end_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit(0)
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    self.state = 0
+
     # deals with user events in the credits screen
     def credits_events(self):
         for event in pygame.event.get():
@@ -193,8 +221,7 @@ class Game:
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
-                    pygame.quit()
-                    quit()
+                    self.state = 0
 
 
 pygame.init()

@@ -4,13 +4,14 @@ from settings import *
 
 # enemies in the game!
 class Enemy:
-    def __init__(self, stage):
+    def __init__(self, stage, money):
         self.screen = pygame.Surface((WINDOW_LENGTH, WINDOW_HEIGHT))
         self.spawning = True
         self.spawn_time = pygame.time.get_ticks()
         self.next_move_time = self.spawn_time + 2000
         self.hp = self.max_hp = random.randint(2,2+stage)
         self.stage = stage
+        self.money = money
 
         self.x = random.randint(100,650)
         self.y = random.randint(100,650)
@@ -70,7 +71,7 @@ class Boss:
         l = []
         num = random.randint(2,min(5,3+self.stage//5))
         for i in range(num):
-            l.append(Enemy(self.stage))
+            l.append(Enemy(self.stage, False))
         return l
 
     def draw_bg(self, screen):
@@ -228,6 +229,8 @@ class Menu:
         pygame.draw.rect(screen, (255,255,255), pygame.Rect(200, 610, 600, 100))
         screen.blit(self.my_font.render("exit?", True, (0,0,0)), (420, 630))
 
+        screen.blit(arrow_default, (80,250+self.option*120))
+
 # tutorial screen
 class Tutorial:
     def __init__(self):
@@ -250,13 +253,15 @@ class Select:
         screen.blit(self.my_font.render("mini dungeon level select!", True, (0,0,0)), (200,125))
 
         pygame.draw.rect(screen, (255,255,255), pygame.Rect(200, 250, 600, 100))
-        screen.blit(self.my_font.render("story mode?", True, (0,0,0)), (410, 270))
+        screen.blit(self.my_font.render("story mode?", True, (0,0,0)), (340, 270))
 
         pygame.draw.rect(screen, (255,255,255), pygame.Rect(200, 400, 600, 100))
-        screen.blit(self.my_font.render("endless mode!", True, (0,0,0)), (410, 420))
+        screen.blit(self.my_font.render("endless mode!", True, (0,0,0)), (320, 420))
 
         pygame.draw.rect(screen, (255,255,255), pygame.Rect(200, 550, 600, 100))
-        screen.blit(self.my_font.render("return to main menu?", True, (0,0,0)), (400, 570))
+        screen.blit(self.my_font.render("return to main menu?", True, (0,0,0)), (220, 570))
+
+        screen.blit(arrow_default, (80,250+self.option*150))
 
 # types of rooms
 class Room:
@@ -279,6 +284,8 @@ class Room:
                 if self.enemies[i].hp <= 0:
                     self.num_enemies -= 1
                     gold = self.enemies[i].max_hp
+                    if not self.enemies[i].money:
+                        gold = 0
                     self.enemies.pop(i)
                     if len(self.boss) == 0 and self.num_enemies == 0:
                         self.cleared = True
@@ -302,7 +309,7 @@ class Room:
     def generate_enemies(self):
         self.num_enemies = random.randint(1,min(10,3+self.stage//2))
         for i in range(self.num_enemies):
-            self.enemies.append(Enemy(self.stage))
+            self.enemies.append(Enemy(self.stage, True))
 
     def draw_enemies(self, screen, person_x, person_y):
         attacked = False
@@ -349,6 +356,8 @@ class Level:
         self.screen = pygame.Surface((WINDOW_LENGTH, WINDOW_HEIGHT))
         self.type = type
         self.stage = stage                                       # how deep in the dungeon
+        self.rooms_explored = 0
+        self.gold_earned = 0
         self.map = [[0 for i in range(5)] for j in range(5)]     # minimap square colours
         self.adj = [[False for i in range(5)] for j in range(5)] # if this room had been adjacent previously
 
@@ -383,6 +392,7 @@ class Level:
         # -1 means empty, 0 means uninitialized, 1 means boss room, 2 means minigame, 3 means loot, 4 means battle
         self.x = self.y = 375
         self.roomx = self.roomy = 2
+        self.rooms_explored += 1
         self.map = [[0 for i in range(5)] for j in range(5)]
         self.adj = [[False for i in range(5)] for j in range(5)]
         self.can_move_next_stage = False
@@ -477,9 +487,11 @@ class Level:
         if 0 <= num <= 1:
             self.y = 715-self.y
             self.roomy += (num*2 - 1)
+            self.rooms_explored += 1
         elif 2 <= num <= 3:
             self.x = 740-self.x
             self.roomx += (num*2 - 5)
+            self.rooms_explored += 1
 
         if self.roomx != 0:
             self.adj[self.roomx-1][self.roomy] = True
@@ -576,6 +588,7 @@ class Level:
                 num = self.map[self.roomx][self.roomy].attacked(self.atk, self.atk_range, self.x, self.y)
                 if num > 0:
                     self.gold += num
+                    self.gold_earned += num
     
     def loot_select(self):
         num = self.loot.select(self.x, self.y)
@@ -610,16 +623,40 @@ class Level:
 
         screen.blit(person_default, (self.x, self.y))
                 
+# game over screen
+class End:
+    def __init__(self, stage, rooms, gold):
+        self.screen = pygame.Surface((WINDOW_LENGTH, WINDOW_HEIGHT))
+        self.stage = stage
+        self.rooms = rooms
+        self.gold = gold
+
+        pygame.font.init()
+        self.my_font = pygame.font.SysFont('Calibri', 64)
+
+    def draw_bg(self, screen):
+        screen.blit(self.my_font.render("game over :(", True, (0,0,0)), (300,150))
+        screen.blit(self.my_font.render("stage ended:    " + str(self.stage), True, (0,0,0)), (250,250))
+        screen.blit(self.my_font.render("rooms explored: " + str(self.rooms), True, (0,0,0)), (250,325))
+        screen.blit(self.my_font.render("gold earned:    " + str(self.gold), True, (0,0,0)), (250,400))
+
+        pygame.draw.rect(screen, (255,255,255), pygame.Rect(200, 550, 600, 100))
+        screen.blit(self.my_font.render("return to main menu?", True, (0,0,0)), (220, 570))
+        screen.blit(arrow_default, (80,550))
+
 # credits screen
 class Credits:
     def __init__(self):
         self.screen = pygame.Surface((WINDOW_LENGTH, WINDOW_HEIGHT))
         pygame.font.init()
         self.my_font = pygame.font.SysFont('Calibri', 64)
+        self.text = pygame.font.SysFont('Calibri', 24)
 
     def draw_bg(self, screen):
         screen.blit(self.my_font.render("credits!", True, (0,0,0)), (300,150))
-        # insert credits over here and exit button
+        screen.blit(self.text.render("a work-in-progress game made by Eric Ning", True, (0,0,0)), (200,250))
+        screen.blit(self.text.render("expected completion date to be by the end of August 2025", True, (0,0,0)), (200,250))
 
         pygame.draw.rect(screen, (255,255,255), pygame.Rect(200, 550, 600, 100))
-        screen.blit(self.my_font.render("exit?", True, (0,0,0)), (435, 570))
+        screen.blit(self.my_font.render("return to main menu?", True, (0,0,0)), (220, 570))
+        screen.blit(arrow_default, (80,550))
