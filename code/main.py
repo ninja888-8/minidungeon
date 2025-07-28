@@ -118,6 +118,11 @@ class Game:
                 pygame.quit()
                 quit(0)
 
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN and not self.tutorial.generating_message:
+                    self.tutorial.generating_message = True
+                    self.tutorial.slide += 1
+
     # deals with user events in the game selection screen
     def select_events(self):
         for event in pygame.event.get():
@@ -198,7 +203,7 @@ class Game:
                 if event.key == pygame.K_RETURN:
                     self.level.can_move = True
 
-            if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.type == pygame.MOUSEBUTTONDOWN and pygame.time.get_ticks() >= self.level.next_attack_time:
                 self.level.attack()
 
     # deals with user events in the end game screen

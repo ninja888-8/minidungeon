@@ -229,16 +229,50 @@ class Menu:
         pygame.draw.rect(screen, (255,255,255), pygame.Rect(200, 610, 600, 100))
         screen.blit(self.my_font.render("exit?", True, (0,0,0)), (420, 630))
 
-        screen.blit(arrow_default, (80,250+self.option*120))
+        screen.blit(arrow_default, (80,260+self.option*120))
 
 # tutorial screen
 class Tutorial:
     def __init__(self):
         self.screen = pygame.Surface((WINDOW_LENGTH, WINDOW_HEIGHT))
-        pygame.font.init()
-        self.my_font = pygame.font.SysFont('Calibri', 64)
+        self.slide = 1
+        self.generating_message = True
 
-    #def draw_bg(self, screen):
+        pygame.font.init()
+        self.my_font = pygame.font.SysFont('Courier New', 24)
+        self.tiny_font = pygame.font.SysFont('Courier New', 14)
+
+    def draw_message(self, screen, message):
+        # draw character talking 
+
+        # draw textbox
+        pygame.draw.rect(screen, (255,255,255), pygame.Rect(50, 550, 650, 150))
+        x = 70
+        y = 570
+        if self.generating_message:
+            for i in range(len(message)):
+                screen.blit(self.my_font.render(message[i], True, (0,0,0)), (x, y))
+                x += 14
+                if i % 43 == 42 and not i == 0:
+                    x = 70
+                    y += 30
+                pygame.display.flip()
+                if message[i] != ' ':
+                    pygame.time.wait(25)
+        else:
+            for i in range(len(message)):
+                screen.blit(self.my_font.render(message[i], True, (0,0,0)), (70+14*(i%43), 570+i//43*30))
+            screen.blit(self.tiny_font.render("[Press Enter To Continue...]", True, (0,0,0)), (450, 670))
+
+        self.generating_message = False
+
+    def draw_bg(self, screen):
+        pygame.draw.rect(screen, (255,255,255), pygame.Rect(750, 0, 250, 750))
+        if self.slide == 1:
+            self.draw_message(screen, "welcome to minidungeon!")
+        elif self.slide == 2:
+            self.draw_message(screen, "minidungeon is an endless dungeon crawler game where you will need to fight enemies and earn some loot along the way!")
+
         
 
 # game select screen
@@ -261,7 +295,7 @@ class Select:
         pygame.draw.rect(screen, (255,255,255), pygame.Rect(200, 550, 600, 100))
         screen.blit(self.my_font.render("return to main menu?", True, (0,0,0)), (220, 570))
 
-        screen.blit(arrow_default, (80,250+self.option*150))
+        screen.blit(arrow_default, (80,260+self.option*150))
 
 # types of rooms
 class Room:
@@ -317,7 +351,7 @@ class Room:
             self.enemies[i].move(person_x, person_y)
             self.enemies[i].draw_bg(screen)
 
-            if self.enemies[i].attack(person_x, person_y):
+            if self.enemies[i].attack(person_x, person_y) and pygame.time.get_ticks() >= self.enemies[i].spawn_time + 2000:
                 attacked = True
         
         return attacked
@@ -551,15 +585,6 @@ class Level:
         screen.blit(self.my_font.render("armor: " + str(self.armor), True, (0,0,0)), (790,350))
         screen.blit(self.my_font.render("gold:  " + str(self.gold), True, (0,0,0)), (790,400))
 
-    def attacked(self):
-        cur_time = pygame.time.get_ticks()
-        if cur_time >= self.next_get_hit_time:
-            if self.armor > 0:
-                self.armor -= 1
-            else:
-                self.lives -= 1
-            self.next_get_hit_time = cur_time + 1500
-
     def move(self):
         cur_time = pygame.time.get_ticks()
 
@@ -589,6 +614,15 @@ class Level:
                 if num > 0:
                     self.gold += num
                     self.gold_earned += num
+
+    def attacked(self):
+        cur_time = pygame.time.get_ticks()
+        if cur_time >= self.next_get_hit_time:
+            if self.armor > 0:
+                self.armor -= 1
+            else:
+                self.lives -= 1
+            self.next_get_hit_time = cur_time + 1500
     
     def loot_select(self):
         num = self.loot.select(self.x, self.y)
@@ -642,7 +676,7 @@ class End:
 
         pygame.draw.rect(screen, (255,255,255), pygame.Rect(200, 550, 600, 100))
         screen.blit(self.my_font.render("return to main menu?", True, (0,0,0)), (220, 570))
-        screen.blit(arrow_default, (80,550))
+        screen.blit(arrow_default, (80,560))
 
 # credits screen
 class Credits:
@@ -659,4 +693,4 @@ class Credits:
 
         pygame.draw.rect(screen, (255,255,255), pygame.Rect(200, 550, 600, 100))
         screen.blit(self.my_font.render("return to main menu?", True, (0,0,0)), (220, 570))
-        screen.blit(arrow_default, (80,550))
+        screen.blit(arrow_default, (80,560))
