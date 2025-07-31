@@ -10,11 +10,18 @@ VISITED = (152, 251, 152)
 CURRENT = (247, 244, 141)
 UNKNOWN = (144, 150, 144)
 
-# colours of  adjacent squares
+# colours of adjacent squares
 UNKNOWN_BOSS = (145, 98, 166)
 UNKNOWN_GAME = (255, 179, 246)
 UNKNOWN_LOOT = (236, 247, 22)
 UNKNOWN_BATTLE = (252, 99, 91)
+
+# controls
+CONTROL_U = (pygame.K_w, pygame.K_UP)
+CONTROL_D = (pygame.K_s, pygame.K_DOWN)
+CONTROL_L = (pygame.K_a, pygame.K_LEFT)
+CONTROL_R = (pygame.K_d, pygame.K_RIGHT)
+CONTROL_CONFIRM = (pygame.K_e, pygame.K_RETURN)
 
 bg_default = pygame.image.load(os.path.join("images", "bg_default.png"))
 arrow_default = pygame.image.load(os.path.join("images", "arrow_default.png"))
