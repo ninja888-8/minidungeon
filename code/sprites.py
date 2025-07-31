@@ -30,7 +30,7 @@ class Enemy:
                         self.x += 1
                     elif self.x == person_x:
                         choice = 1
-                
+
                 if choice == 1:
                     if self.y > person_y:
                         self.y -= 1
@@ -264,7 +264,7 @@ class Room:
                         gold = self.boss[0].max_hp
                         self.boss.pop(0)
                         self.cleared = True
-                        return gold   
+                        return gold
         return -1
 
     def generate_boss(self):
@@ -283,7 +283,7 @@ class Room:
 
             if self.enemies[i].attack(person_x, person_y) and pygame.time.get_ticks() >= self.enemies[i].spawn_time + 2000:
                 attacked = True
-        
+
         return attacked
 
     def draw_boss(self, screen, person_x, person_y):
@@ -302,7 +302,7 @@ class Room:
             attacked = True
 
         return attacked
-    
+
     def draw_bg(self, screen, person_x, person_y):
         screen.blit(bg_default, (50,50))
         if self.type == 1 and not self.cleared:
@@ -313,7 +313,7 @@ class Room:
                 return True
         if self.type == 1 and self.cleared:
             screen.blit(portal_default, (300,300))
-        
+
 # actual game screen
 class Level:
     def __init__(self, gamemode, stage):
@@ -340,7 +340,7 @@ class Level:
         self.next_move_time = pygame.time.get_ticks()
         self.next_attack_time = pygame.time.get_ticks()
         self.next_get_hit_time = pygame.time.get_ticks()
-        
+
         # default stats
         self.lives = 3
         self.atk = 1
@@ -367,7 +367,7 @@ class Level:
             if self.map[rand_x][rand_y] == 0:
                 self.map[rand_x][rand_y] = Room(1, self.stage)
                 break
-        
+
         num = random.randint(2, 4)
         for i in range(num):
             while True:
@@ -376,7 +376,7 @@ class Level:
                 if self.map[rand_x][rand_y] == 0:
                     self.map[rand_x][rand_y] = Room(2, self.stage)
                     break
-        
+
         num = random.randint(max(2,3-self.stage//2), max(3,5-self.stage//2))
         for i in range(num):
             while True:
@@ -441,7 +441,7 @@ class Level:
             return 3
         else:
             return -1
-        
+
     def next_room(self):
         if self.map[self.roomx][self.roomy].type != 1:
             self.map[self.roomx][self.roomy] = Room(-1, self.stage)
@@ -486,7 +486,7 @@ class Level:
             cur_time = pygame.time.get_ticks()
             self.next_get_hit_time = cur_time + 2000
             self.next_attack_time = cur_time + 2000
-        
+
     def draw_minimap(self, screen):
         for i in range(5):
             for j in range(5):
@@ -528,7 +528,7 @@ class Level:
                 self.x -= 3
             if self.moveR:
                 self.x += 3
-            
+
         self.y = max(75, self.y)
         self.y = min(625, self.y)
         self.x = max(75, self.x)
@@ -553,7 +553,7 @@ class Level:
             else:
                 self.lives -= 1
             self.next_get_hit_time = cur_time + 1500
-    
+
     def loot_select(self):
         num = self.loot.select(self.x, self.y)
         if num == 0:
@@ -586,7 +586,7 @@ class Level:
             screen.blit(self.my_font.render("do u wish to move?", True, (0,0,0)), (250,300))
 
         screen.blit(person_default, (self.x, self.y))
-                
+
 # game over screen
 class End:
     def __init__(self, stage, rooms, gold):
@@ -659,7 +659,7 @@ class Tutorial:
 
         self.next_move_time = pygame.time.get_ticks()
         self.next_attack_time = pygame.time.get_ticks()
-        
+
         # default stats
         self.lives = 3
         self.atk = 1
@@ -673,7 +673,7 @@ class Tutorial:
         self.tiny_font = pygame.font.SysFont('Courier New', 14)
 
     def draw_message(self, screen, message):
-        # draw character talking 
+        # draw character talking
 
         # draw textbox
         pygame.draw.rect(screen, (255,255,255), pygame.Rect(50, 550, 650, 150))
@@ -719,7 +719,7 @@ class Tutorial:
                             skip = True
                     except ValueError:
                         position = -1
-            screen.blit(self.tiny_font.render("[Press Enter To Continue...]", True, (0,0,0)), (450, 670))
+            screen.blit(self.tiny_font.render("[Press %s To Continue...]" % pygame.key.name(CONTROL_CONFIRM[0]), True, (0,0,0)), (450, 670))
 
         self.generating_message = False
 
@@ -787,7 +787,7 @@ class Tutorial:
             return 3
         else:
             return -1
-        
+
     def next_room(self):
         # generate enemies
         if self.map[self.roomx][self.roomy].type == 4:
@@ -809,7 +809,7 @@ class Tutorial:
             cur_time = pygame.time.get_ticks()
             self.next_get_hit_time = cur_time + 2000
             self.next_attack_time = cur_time + 2000
-        
+
     def draw_minimap(self, screen):
         for i in range(5):
             for j in range(5):
@@ -851,7 +851,7 @@ class Tutorial:
                 self.x -= 3
             if self.moveR:
                 self.x += 3
-            
+
         self.y = max(75, self.y)
         self.y = min(625, self.y)
         self.x = max(75, self.x)
@@ -866,7 +866,7 @@ class Tutorial:
                 num = self.map[self.roomx][self.roomy].attacked(self.atk, self.atk_range, self.x, self.y)
                 if num > 0:
                     self.gold += num
-    
+
     def loot_select(self):
         num = self.loot.select(self.x, self.y)
         if num == 0:
@@ -878,7 +878,7 @@ class Tutorial:
         elif num == -2:
             self.atk -= 1+self.stage//3
             self.atk = max(self.atk, 1)
-    
+
     def draw_game_bg(self, screen):
         self.move()
         self.draw_minimap(screen)
@@ -908,7 +908,7 @@ class Tutorial:
             self.draw_message(screen, "Continue when you are ready!")
         elif self.slide == 5:
             self.draw_game_bg(screen)
-            self.draw_message(screen, "You may enter through a door by going near it and pressing Enter when given the prompt.")
+            self.draw_message(screen, "You may enter through a door by going near it and pressing %s when given the prompt." % pygame.key.name(CONTROL_CONFIRM[0]))
         elif self.slide == 6:
             self.draw_game_bg(screen)
             self.draw_message(screen, "You cannot travel past the 5x5 grid, nor can you open a door when there are enemies currently in the room with you.")

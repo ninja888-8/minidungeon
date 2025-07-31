@@ -45,7 +45,7 @@ class Game:
             elif self.state == 5:
                 self.credits_events()
                 self.draw_credits()
-    
+
     # draws the menu
     def draw_menu(self):
         self.screen.fill(BG)
@@ -57,7 +57,7 @@ class Game:
         self.screen.fill(BG)
         self.tutorial.draw_bg(self.screen)
         pygame.display.flip()
-    
+
     # draws the game select screen
     def draw_select(self):
         self.screen.fill(BG)
@@ -88,18 +88,18 @@ class Game:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit(0)
-            
+
             # moving around in menu, cycles around
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_DOWN:
+                if event.key in CONTROL_D:
                     self.menu.option += 1
                     self.menu.option %= 4
 
-                if event.key == pygame.K_UP:
+                if event.key in CONTROL_U:
                     self.menu.option += 3
                     self.menu.option %= 4
 
-                if event.key == pygame.K_RETURN:
+                if event.key in CONTROL_CONFIRM:
                     if self.menu.option == 0:
                         self.state = 1
                         self.tutorial = Tutorial()
@@ -111,6 +111,24 @@ class Game:
                         pygame.quit()
                         quit(0)
 
+    # deals with events that move the player
+    def movement_events(self, obj, event):
+        match event.type:
+            case pygame.KEYDOWN:
+                is_pressed = True
+            case pygame.KEYUP:
+                is_pressed = False
+            case _:
+                return
+        if event.key in CONTROL_U:
+            obj.moveU = is_pressed
+        if event.key in CONTROL_D:
+            obj.moveD = is_pressed
+        if event.key in CONTROL_L:
+            obj.moveL = is_pressed
+        if event.key in CONTROL_R:
+            obj.moveR = is_pressed
+
     # deals with user events in the tutorial
     def tutorial_events(self):
         for event in pygame.event.get():
@@ -118,8 +136,10 @@ class Game:
                 pygame.quit()
                 quit(0)
 
+            self.movement_events(self.tutorial, event)
+
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN and not self.tutorial.generating_message:
+                if event.key in CONTROL_CONFIRM and not self.tutorial.generating_message:
                     self.tutorial.generating_message = True
                     self.tutorial.slide += 1
                     if self.tutorial.slide == 11:
@@ -142,39 +162,15 @@ class Game:
                         self.tutorial.next_stage()
                     elif self.tutorial.slide == 17:
                         self.state = 0
-                elif self.tutorial.map[self.tutorial.roomx][self.tutorial.roomy].type == 1 and self.tutorial.map[self.tutorial.roomx][self.tutorial.roomy].cleared and 280 <= self.tutorial.x <= 470 and 280 <= self.tutorial.y <= 470 and not self.tutorial.shopping and event.key == pygame.K_RETURN:
+                elif self.tutorial.map[self.tutorial.roomx][self.tutorial.roomy].type == 1 and self.tutorial.map[self.tutorial.roomx][self.tutorial.roomy].cleared and 280 <= self.tutorial.x <= 470 and 280 <= self.tutorial.y <= 470 and not self.tutorial.shopping and event.key in CONTROL_CONFIRM:
                     self.tutorial.next_stage()
-                elif self.tutorial.shopping and event.key == pygame.K_RETURN:
+                elif self.tutorial.shopping and event.key in CONTROL_CONFIRM:
                     self.tutorial.shop_select()
-                elif (self.tutorial.map[self.tutorial.roomx][self.tutorial.roomy].type == 3 and event.key == pygame.K_RETURN):
+                elif (self.tutorial.map[self.tutorial.roomx][self.tutorial.roomy].type == 3 and event.key in CONTROL_CONFIRM):
                     self.tutorial.loot_select()
 
-                if event.key == pygame.K_w or event.key == pygame.K_UP:
-                    self.tutorial.moveU = True
-                
-                if event.key == pygame.K_s or event.key == pygame.K_DOWN:
-                    self.tutorial.moveD = True
-
-                if event.key == pygame.K_a or event.key == pygame.K_LEFT:
-                    self.tutorial.moveL = True
-
-                if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
-                    self.tutorial.moveR = True
-
             if event.type == pygame.KEYUP:
-                if event.key == pygame.K_w or event.key == pygame.K_UP:
-                    self.tutorial.moveU = False
-                
-                if event.key == pygame.K_s or event.key == pygame.K_DOWN:
-                    self.tutorial.moveD = False
-
-                if event.key == pygame.K_a or event.key == pygame.K_LEFT:
-                    self.tutorial.moveL = False
-
-                if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
-                    self.tutorial.moveR = False
-
-                if event.key == pygame.K_RETURN:
+                if event.key in CONTROL_CONFIRM:
                     self.tutorial.can_move = True
 
             if event.type == pygame.MOUSEBUTTONDOWN and pygame.time.get_ticks() >= self.tutorial.next_attack_time:
@@ -186,18 +182,18 @@ class Game:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit(0)
-            
+
             # moving around in menu, cycles around
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_DOWN:
+                if event.key in CONTROL_D:
                     self.select.option += 1
                     self.select.option %= 3
-                
-                if event.key == pygame.K_UP:
+
+                if event.key in CONTROL_U:
                     self.select.option += 2
                     self.select.option %= 3
 
-                if event.key == pygame.K_RETURN:
+                if event.key in CONTROL_CONFIRM:
                     if self.select.option == 0:
                         self.type = 0
                         self.state = 3
@@ -219,46 +215,24 @@ class Game:
                 pygame.quit()
                 quit(0)
 
+            self.movement_events(self.level, event)
+
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_w or event.key == pygame.K_UP:
-                    self.level.moveU = True
-                
-                if event.key == pygame.K_s or event.key == pygame.K_DOWN:
-                    self.level.moveD = True
-
-                if event.key == pygame.K_a or event.key == pygame.K_LEFT:
-                    self.level.moveL = True
-
-                if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
-                    self.level.moveR = True
-                
-                if self.level.map[self.level.roomx][self.level.roomy].type == 1 and self.level.map[self.level.roomx][self.level.roomy].cleared and 280 <= self.level.x <= 470 and 280 <= self.level.y <= 470 and not self.level.shopping and event.key == pygame.K_RETURN:
+                if self.level.map[self.level.roomx][self.level.roomy].type == 1 and self.level.map[self.level.roomx][self.level.roomy].cleared and 280 <= self.level.x <= 470 and 280 <= self.level.y <= 470 and not self.level.shopping and event.key in CONTROL_CONFIRM:
                     self.level.next_stage()
 
-                if self.level.shopping and event.key == pygame.K_RETURN:
+                if self.level.shopping and event.key in CONTROL_CONFIRM:
                     self.level.shop_select()
 
-                if (self.level.map[self.level.roomx][self.level.roomy].type == 3 and event.key == pygame.K_RETURN):
+                if (self.level.map[self.level.roomx][self.level.roomy].type == 3 and event.key in CONTROL_CONFIRM):
                     self.level.loot_select()
 
-                if event.key == pygame.K_RETURN and self.level.can_move_next_room() != -1:
+                if event.key in CONTROL_CONFIRM and self.level.can_move_next_room() != -1:
                     self.level.next_room()
 
             if event.type == pygame.KEYUP:
-                if event.key == pygame.K_w or event.key == pygame.K_UP:
-                    self.level.moveU = False
-                
-                if event.key == pygame.K_s or event.key == pygame.K_DOWN:
-                    self.level.moveD = False
-
-                if event.key == pygame.K_a or event.key == pygame.K_LEFT:
-                    self.level.moveL = False
-
-                if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
-                    self.level.moveR = False
-
-                if event.key == pygame.K_RETURN:
-                    self.level.can_move = True
+                if event.key in CONTROL_CONFIRM:
+                    self.tutorial.can_move = True
 
             if event.type == pygame.MOUSEBUTTONDOWN and pygame.time.get_ticks() >= self.level.next_attack_time:
                 self.level.attack()
@@ -271,7 +245,7 @@ class Game:
                 quit(0)
 
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN:
+                if event.key in CONTROL_CONFIRM:
                     self.state = 0
 
     # deals with user events in the credits screen
@@ -282,7 +256,7 @@ class Game:
                 quit(0)
 
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN:
+                if event.key in CONTROL_CONFIRM:
                     self.state = 0
 
 
