@@ -142,23 +142,23 @@ class Game:
                 if event.key in CONTROL_CONFIRM and not self.tutorial.generating_message:
                     self.tutorial.generating_message = True
                     self.tutorial.slide += 1
-                    if self.tutorial.slide == 11:
+                    if self.tutorial.slide == 10:
                         self.tutorial.roomx = 2
                         self.tutorial.roomy = 3
                         self.tutorial.next_room()
-                    elif self.tutorial.slide == 12:
+                    elif self.tutorial.slide == 11:
                         self.tutorial.roomx = 3
                         self.tutorial.roomy = 2
                         self.tutorial.next_room()
-                    elif self.tutorial.slide == 13:
+                    elif self.tutorial.slide == 12:
                         self.tutorial.roomx = 1
                         self.tutorial.roomy = 2
                         self.tutorial.next_room()
-                    elif self.tutorial.slide == 14:
+                    elif self.tutorial.slide == 13:
                         self.tutorial.roomx = 2
                         self.tutorial.roomy = 1
                         self.tutorial.next_room()
-                    elif self.tutorial.slide == 15:
+                    elif self.tutorial.slide == 14:
                         self.tutorial.next_stage()
                     elif self.tutorial.slide == 17:
                         self.state = 0
@@ -188,7 +188,7 @@ class Game:
                 if event.key in CONTROL_D:
                     self.select.option += 1
                     self.select.option %= 3
-
+                
                 if event.key in CONTROL_U:
                     self.select.option += 2
                     self.select.option %= 3
@@ -218,6 +218,18 @@ class Game:
             self.movement_events(self.level, event)
 
             if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_w or event.key in CONTROL_U:
+                    self.level.moveU = True
+                
+                if event.key == pygame.K_s or event.key in CONTROL_D:
+                    self.level.moveD = True
+
+                if event.key == pygame.K_a or event.key == pygame.K_LEFT:
+                    self.level.moveL = True
+
+                if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
+                    self.level.moveR = True
+                
                 if self.level.map[self.level.roomx][self.level.roomy].type == 1 and self.level.map[self.level.roomx][self.level.roomy].cleared and 280 <= self.level.x <= 470 and 280 <= self.level.y <= 470 and not self.level.shopping and event.key in CONTROL_CONFIRM:
                     self.level.next_stage()
 
@@ -231,8 +243,20 @@ class Game:
                     self.level.next_room()
 
             if event.type == pygame.KEYUP:
+                if event.key == pygame.K_w or event.key in CONTROL_U:
+                    self.level.moveU = False
+                
+                if event.key == pygame.K_s or event.key in CONTROL_D:
+                    self.level.moveD = False
+
+                if event.key == pygame.K_a or event.key == pygame.K_LEFT:
+                    self.level.moveL = False
+
+                if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
+                    self.level.moveR = False
+
                 if event.key in CONTROL_CONFIRM:
-                    self.tutorial.can_move = True
+                    self.level.can_move = True
 
             if event.type == pygame.MOUSEBUTTONDOWN and pygame.time.get_ticks() >= self.level.next_attack_time:
                 self.level.attack()
@@ -258,7 +282,6 @@ class Game:
             if event.type == pygame.KEYDOWN:
                 if event.key in CONTROL_CONFIRM:
                     self.state = 0
-
 
 pygame.init()
 game = Game(0)
