@@ -30,4 +30,5 @@ enemy_default = pygame.image.load(os.path.join("images", "enemy_default.png"))
 portal_default = pygame.image.load(os.path.join("images", "portal_default.png"))
 
 enemy_slime = pygame.image.load(os.path.join("images", "enemy_slime.png"))
+boss_slime = pygame.image.load(os.path.join("images", "boss_slime.png"))
 person_type1 = pygame.image.load(os.path.join("images", "person_type1.png"))

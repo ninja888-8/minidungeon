@@ -39,7 +39,7 @@ class Enemy:
                         self.y += 1
 
     def attack(self, person_x, person_y):
-        if abs(person_x - self.x) + abs(person_y - self.y) <= (25+self.stage):
+        if abs(person_x - self.x) + abs(person_y - self.y) <= (enemy_slime.get_size()[0]/2 + 10 + self.stage):
             return True
         else:
             return False
@@ -49,8 +49,8 @@ class Enemy:
             screen.blit(enemy_default, (self.x-enemy_default.get_size()[0]/2, self.y-enemy_default.get_size()[1]/2))
         elif self.type == 0:
             screen.blit(enemy_slime, (self.x-enemy_slime.get_size()[0]/2, self.y-enemy_slime.get_size()[1]/2))
-        pygame.draw.rect(screen, (0,0,0), pygame.Rect(self.x-20, self.y-25, 40, 9))
-        pygame.draw.rect(screen, (255,100,100), pygame.Rect(self.x-18, self.y-23, 36.0*self.hp/self.max_hp, 5))
+        pygame.draw.rect(screen, (0,0,0), pygame.Rect(self.x-enemy_slime.get_size()[0]/2-5, self.y-enemy_slime.get_size()[0]/2-10, enemy_slime.get_size()[0]+10, 9))
+        pygame.draw.rect(screen, (255,100,100), pygame.Rect(self.x-enemy_slime.get_size()[0]/2-3, self.y-enemy_slime.get_size()[0]/2-8, (enemy_slime.get_size()[0]+6.0)*self.hp/self.max_hp, 5))
 
 # boss enemy in the game
 class Boss:
@@ -67,7 +67,7 @@ class Boss:
         self.y = 375
 
     def attack(self, person_x, person_y):
-        if abs(person_x - self.x) + abs(person_y - self.y) <= 25:
+        if abs(person_x - self.x) + abs(person_y - self.y) <= boss_slime.get_size()[0]/2 + 10:
             return True
         else:
             return False
@@ -83,9 +83,9 @@ class Boss:
         if self.type == -1:
             screen.blit(enemy_default, (self.x-enemy_default.get_size()[0]/2, self.y-enemy_default.get_size()[1]/2))
         elif self.type == 0:
-            screen.blit(enemy_slime, (self.x-enemy_slime.get_size()[0]/2, self.y-enemy_slime.get_size()[1]/2))
-        pygame.draw.rect(screen, (0,0,0), pygame.Rect(self.x-20, self.y-25, 40, 9))
-        pygame.draw.rect(screen, (255,100,100), pygame.Rect(self.x-18, self.y-23, 36.0*self.hp/self.max_hp, 5))
+            screen.blit(boss_slime, (self.x-boss_slime.get_size()[0]/2, self.y-boss_slime.get_size()[1]/2))
+        pygame.draw.rect(screen, (0,0,0), pygame.Rect(self.x-boss_slime.get_size()[0]/2-5, self.y-boss_slime.get_size()[0]/2-10, boss_slime.get_size()[0]+10, 9))
+        pygame.draw.rect(screen, (255,100,100), pygame.Rect(self.x-boss_slime.get_size()[0]/2-3, self.y-boss_slime.get_size()[0]/2-8, (boss_slime.get_size()[0]+6.0)*self.hp/self.max_hp, 5))
 
 # loot rooms
 class Loot:
@@ -101,10 +101,11 @@ class Loot:
         self.indices = [random.randint(0,1), random.randint(2,3), random.randint(4,5)]
 
         for i in range(6):
-            self.chances[i] = max(self.chances[i], random.randint(self.chances[i]+20, 100) - self.stage)
+            self.chances[i] = max(self.chances[i], random.randint(self.chances[i], 100) - self.stage)
 
         pygame.font.init()
-        self.my_font = pygame.font.SysFont('Calibri', 32)
+        self.my_font = pygame.font.SysFont('Courier New', 24)
+        self.tiny_font = pygame.font.SysFont('Courier New', 14)
 
     def select(self, person_x, person_y):
         num = random.randint(0,100)
@@ -150,18 +151,24 @@ class Loot:
                 pygame.draw.rect(screen, (255,100,100), pygame.Rect(200+150*self.chosen, 350, 50, 50))
 
         if 180 <= person_x <= 270 and 330 <= person_y <= 420:
+            pygame.draw.rect(screen, (255,255,255), pygame.Rect(50, 550, 650, 150))
+            screen.blit(self.tiny_font.render("[Press %s To Select...]" % pygame.key.name(CONTROL_CONFIRM[0]), True, (0,0,0)), (450, 670))
             screen.blit(self.my_font.render("blessing of " + str(self.names[self.indices[0]]), True, (0,0,0)), (100, 575))
             if self.indices[0] == 0:
                 screen.blit(self.my_font.render(str(self.chances[0]) + "% to gain " + str(10+self.stage) + " gold", True, (0,0,0)), (100, 600))
             else:
                 screen.blit(self.my_font.render(str(self.chances[1]) + "% to gain a missing life", True, (0,0,0)), (100, 600))
         elif 330 <= person_x <= 420 and 330 <= person_y <= 420:
+            pygame.draw.rect(screen, (255,255,255), pygame.Rect(50, 550, 650, 150))
+            screen.blit(self.tiny_font.render("[Press %s To Select...]" % pygame.key.name(CONTROL_CONFIRM[0]), True, (0,0,0)), (450, 670))
             screen.blit(self.my_font.render("blessing of " + str(self.names[self.indices[1]]), True, (0,0,0)), (100, 575))
             if self.indices[1] == 2:
                 screen.blit(self.my_font.render(str(self.chances[2]) + "% to gain 5 atk range", True, (0,0,0)), (100, 600))
             else:
                 screen.blit(self.my_font.render(str(self.chances[3]) + "% to gain 1 defence", True, (0,0,0)), (100, 600))
         elif 480 <= person_x <= 570 and 330 <= person_y <= 420:
+            pygame.draw.rect(screen, (255,255,255), pygame.Rect(50, 550, 650, 150))
+            screen.blit(self.tiny_font.render("[Press %s To Select...]" % pygame.key.name(CONTROL_CONFIRM[0]), True, (0,0,0)), (450, 670))
             screen.blit(self.my_font.render("blessing of " + str(self.names[self.indices[2]]), True, (0,0,0)), (100, 575))
             if self.indices[2] == 4:
                 screen.blit(self.my_font.render(str(self.chances[4]) + "% to gain " + str(2+self.stage//3) + " atk (otherwise lose " + str(1+self.stage//3) + ")", True, (0,0,0)), (100, 600))
@@ -180,7 +187,8 @@ class Shop:
             self.price[i] += random.randint(15+5*i,25+5*i)
 
         pygame.font.init()
-        self.my_font = pygame.font.SysFont('Calibri', 32)
+        self.my_font = pygame.font.SysFont('Courier New', 24)
+        self.tiny_font = pygame.font.SysFont('Courier New', 14)
 
     def select(self, person_x, person_y):
         if 180 <= person_x <= 270 and 330 <= person_y <= 420 and not self.chosen[0]:
@@ -210,17 +218,23 @@ class Shop:
                 pygame.draw.rect(screen, (255,100,100), pygame.Rect(200+150*i, 350, 50, 50))
 
         if 180 <= person_x <= 270 and 330 <= person_y <= 420:
-            screen.blit(self.my_font.render("blessing of longevity", True, (0,0,0)), (100, 550))
-            screen.blit(self.my_font.render("cost: " + str(self.price[0]), True, (0,0,0)), (100, 575))
-            screen.blit(self.my_font.render("restore 2 missing health", True, (0,0,0)), (100, 600))
+            pygame.draw.rect(screen, (255,255,255), pygame.Rect(50, 550, 650, 150))
+            screen.blit(self.tiny_font.render("[Press %s To Purchase...]" % pygame.key.name(CONTROL_CONFIRM[0]), True, (0,0,0)), (450, 670))
+            screen.blit(self.my_font.render("blessing of longevity", True, (0,0,0)), (75, 575))
+            screen.blit(self.my_font.render("cost: " + str(self.price[0]), True, (0,0,0)), (75, 600))
+            screen.blit(self.my_font.render("restore 2 missing health", True, (0,0,0)), (75, 625))
         elif 330 <= person_x <= 420 and 330 <= person_y <= 420:
-            screen.blit(self.my_font.render("blessing of defence", True, (0,0,0)), (100, 550))
-            screen.blit(self.my_font.render("cost: " + str(self.price[1]), True, (0,0,0)), (100, 575))
-            screen.blit(self.my_font.render("gain 1 defence ", True, (0,0,0)), (100, 600))
+            pygame.draw.rect(screen, (255,255,255), pygame.Rect(50, 550, 650, 150))
+            screen.blit(self.tiny_font.render("[Press %s To Purchase...]" % pygame.key.name(CONTROL_CONFIRM[0]), True, (0,0,0)), (450, 670))
+            screen.blit(self.my_font.render("blessing of defence", True, (0,0,0)), (75, 575))
+            screen.blit(self.my_font.render("cost: " + str(self.price[1]), True, (0,0,0)), (75, 600))
+            screen.blit(self.my_font.render("gain 1 defence ", True, (0,0,0)), (75, 625))
         elif 480 <= person_x <= 570 and 330 <= person_y <= 420:
-            screen.blit(self.my_font.render("blessing of strength", True, (0,0,0)), (100, 550))
-            screen.blit(self.my_font.render("cost: " + str(self.price[2]), True, (0,0,0)), (100, 575))
-            screen.blit(self.my_font.render("gain 1 attack", True, (0,0,0)), (100, 600))
+            pygame.draw.rect(screen, (255,255,255), pygame.Rect(50, 550, 650, 150))
+            screen.blit(self.tiny_font.render("[Press %s To Purchase...]" % pygame.key.name(CONTROL_CONFIRM[0]), True, (0,0,0)), (450, 670))
+            screen.blit(self.my_font.render("blessing of strength", True, (0,0,0)), (75, 575))
+            screen.blit(self.my_font.render("cost: " + str(self.price[2]), True, (0,0,0)), (75, 600))
+            screen.blit(self.my_font.render("gain 1 attack", True, (0,0,0)), (75, 625))
 
         screen.blit(portal_default, (300,100))
 
@@ -368,7 +382,8 @@ class Level:
         self.gold = 0
 
         pygame.font.init()
-        self.my_font = pygame.font.SysFont('Calibri', 64)
+        self.my_font = pygame.font.SysFont('Courier New', 24)
+        self.tiny_font = pygame.font.SysFont('Courier New', 14)
 
     def generate_rooms(self):
         # one boss room, 2-4 minigame room, 3-5 loot room, rest regular battle room
@@ -450,13 +465,13 @@ class Level:
         if not self.map[self.roomx][self.roomy].cleared:
             return -1
 
-        if 310 <= self.x <= 440 and 75 <= self.y <= 90 and self.roomy != 0:
+        if 310 <= self.x <= 440 and 90 <= self.y <= 100 and self.roomy != 0:
             return 0
-        elif 310 <= self.x <= 440 and 610 <= self.y <= 625 and self.roomy != 4:
+        elif 310 <= self.x <= 440 and 650 <= self.y <= 660 and self.roomy != 4:
             return 1
-        elif 75 <= self.x <= 90 and 310 <= self.y <= 440 and self.roomx != 0:
+        elif 90 <= self.x <= 100 and 310 <= self.y <= 440 and self.roomx != 0:
             return 2
-        elif 635 <= self.x <= 650 and 310 <= self.y <= 440 and self.roomx != 4:
+        elif 650 <= self.x <= 660 and 310 <= self.y <= 440 and self.roomx != 4:
             return 3
         else:
             return -1
@@ -548,10 +563,10 @@ class Level:
             if self.moveR:
                 self.x += 3
             
-        self.y = max(75, self.y)
-        self.y = min(625, self.y)
-        self.x = max(75, self.x)
-        self.x = min(650, self.x)
+        self.y = max(90, self.y)
+        self.y = min(660, self.y)
+        self.x = max(90, self.x)
+        self.x = min(660, self.x)
 
     def attack(self):
         cur_time = pygame.time.get_ticks()
@@ -616,7 +631,9 @@ class Level:
             self.attacked()
 
         if self.can_move_next_room() != -1:
-            screen.blit(self.my_font.render("do u wish to move?", True, (0,0,0)), (250,300))
+            pygame.draw.rect(screen, (255,255,255), pygame.Rect(30, 690, 690, 45))
+            screen.blit(self.my_font.render("do you wish to move?", True, (0,0,0)), (50,700))
+            screen.blit(self.tiny_font.render("[Press %s To Continue...]" % pygame.key.name(CONTROL_CONFIRM[0]), True, (0,0,0)), (470, 705))
 
         screen.blit(person_type1, (self.x-person_type1.get_size()[0]/2, self.y-person_type1.get_size()[1]/2))
                 
@@ -814,13 +831,13 @@ class Tutorial:
         if not self.map[self.roomx][self.roomy].cleared:
             return -1
 
-        if 310 <= self.x <= 440 and 75 <= self.y <= 90 and self.roomy != 0:
+        if 310 <= self.x <= 440 and 90 <= self.y <= 100 and self.roomy != 0:
             return 0
-        elif 310 <= self.x <= 440 and 610 <= self.y <= 625 and self.roomy != 4:
+        elif 310 <= self.x <= 440 and 650 <= self.y <= 660 and self.roomy != 4:
             return 1
-        elif 75 <= self.x <= 90 and 310 <= self.y <= 440 and self.roomx != 0:
+        elif 90 <= self.x <= 100 and 310 <= self.y <= 440 and self.roomx != 0:
             return 2
-        elif 635 <= self.x <= 650 and 310 <= self.y <= 440 and self.roomx != 4:
+        elif 650 <= self.x <= 660 and 310 <= self.y <= 440 and self.roomx != 4:
             return 3
         else:
             return -1
@@ -889,10 +906,10 @@ class Tutorial:
             if self.moveR:
                 self.x += 3
             
-        self.y = max(75, self.y)
-        self.y = min(625, self.y)
-        self.x = max(75, self.x)
-        self.x = min(650, self.x)
+        self.y = max(90, self.y)
+        self.y = min(660, self.y)
+        self.x = max(90, self.x)
+        self.x = min(660, self.x)
 
     def attack(self):
         cur_time = pygame.time.get_ticks()
