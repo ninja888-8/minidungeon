@@ -197,16 +197,21 @@ class Boss:
 class Minigame:
     def __init__(self, stage):
         self.screen = pygame.Surface((WINDOW_LENGTH, WINDOW_HEIGHT))
-        self.type = random.randint(0,2)
-        self.type = 0
+        self.type = random.randint(0,1)
         self.selected = False
         self.delay = 0
 
         self.level = 1
-        self.range_low = random.randint(0,19)
-        self.range_high = self.range_low + 10
         self.current = -1
         self.gave_money = False
+
+        if self.type == 0:
+            self.range_low = random.randint(0,19)
+            self.range_high = self.range_low + 10
+        elif self.type == 1:
+            self.x = random.randint(50,700)
+            self.y = random.randint(50,600)
+            self.time = pygame.time.get_ticks()
 
         pygame.font.init()
         self.my_font = pygame.font.SysFont('Courier New', 24)
@@ -216,8 +221,9 @@ class Minigame:
         if not self.selected or self.delay > pygame.time.get_ticks() and 330 <= person_x <= 420 and 330 <= person_y <= 420:
             self.selected = True
             self.delay = pygame.time.get_ticks() + 1000
+            self.time = pygame.time.get_ticks() + 1000
     
-    def play(self, screen):
+    def play(self, screen, mouse_x, mouse_y):
         if self.type == 0:
             if self.range_low <= self.current <= self.range_high or self.range_low <= (59-self.current) <= self.range_high:
                 if self.level == 3:
@@ -242,7 +248,17 @@ class Minigame:
                 pygame.display.flip()
                 pygame.time.wait(100)
         elif self.type == 1:
-            if 
+            if not mouse_x == -1 and not mouse_y == -1:
+                if self.x-25 <= mouse_x <= self.x+25 and self.y-25 <= mouse_y <= self.y+25:
+                    if self.level == 20:
+                        if pygame.time.get_ticks() <= self.time + 12000:
+                            self.type = -1
+                        else:
+                            self.type = -2
+                    else:
+                        self.level += 1
+                        self.x = random.randint(50,700)
+                        self.y = random.randint(50,600)
 
     def draw_bg(self, screen, person_x, person_y):
         screen.blit(bg_default, (50,50))
@@ -275,7 +291,11 @@ class Minigame:
             self.current %= 60
         elif self.type == 1:
             # aim minigame
-            print()
+            pygame.draw.rect(screen, (255,100,100), pygame.Rect(self.x-25,self.y-25,50,50))
+            pygame.draw.rect(screen, (100,100,127), pygame.Rect(self.x-22,self.y-22,44,44))
+
+            pygame.draw.rect(screen, (0,0,0), pygame.Rect(50, 650, 650, 50))
+            pygame.draw.rect(screen, (255,100,100), pygame.Rect(55, 660, (640.0)*(12000-pygame.time.get_ticks()+self.time)/12000, 40))
         elif self.type == 2:
             # trivia minigame (3 questions, num rooms? enemies? num X rooms?)
             print()
@@ -850,12 +870,12 @@ class Level:
                 self.atk_range -= 8+self.stage//3
                 self.atk_range = max(self.atk_range, 15)
 
-    def minigame_select(self):
+    def minigame_select(self, mouse_x, mouse_y):
         if not self.minigame.selected and self.gold >= 5:
             self.gold -= 5
             self.minigame.select(self.x, self.y)
         else:
-            self.minigame.play(self.screen)
+            self.minigame.play(self.screen, mouse_x, mouse_y)
 
     def draw_bg(self, screen):
         # layout: main game screen + sidebar with minimap, health, items, etc.

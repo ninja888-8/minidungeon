@@ -236,11 +236,11 @@ class Game:
                 if self.level.shopping and event.key in CONTROL_CONFIRM:
                     self.level.shop_select()
 
-                if (self.level.map[self.level.roomx][self.level.roomy].type == 3 and event.key in CONTROL_CONFIRM):
+                if self.level.map[self.level.roomx][self.level.roomy].type == 3 and event.key in CONTROL_CONFIRM:
                     self.level.loot_select()
 
-                if (self.level.map[self.level.roomx][self.level.roomy].type == 2 and event.key in CONTROL_CONFIRM):
-                    self.level.minigame_select()
+                if self.level.map[self.level.roomx][self.level.roomy].type == 2 and event.key in CONTROL_CONFIRM:
+                    self.level.minigame_select(-1, -1)
 
                 if event.key in CONTROL_CONFIRM and self.level.can_move_next_room() != -1:
                     self.level.next_room()
@@ -261,8 +261,11 @@ class Game:
                 if event.key in CONTROL_CONFIRM:
                     self.level.can_move = True
 
-            if event.type == pygame.MOUSEBUTTONDOWN and pygame.time.get_ticks() >= self.level.next_attack_time:
-                self.level.attack()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if self.level.map[self.level.roomx][self.level.roomy].type == 2:
+                    self.level.minigame_select(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1])
+                elif pygame.time.get_ticks() >= self.level.next_attack_time:
+                    self.level.attack()
 
     # deals with user events in the end game screen
     def end_events(self):
