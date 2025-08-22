@@ -239,6 +239,9 @@ class Game:
                 if (self.level.map[self.level.roomx][self.level.roomy].type == 3 and event.key in CONTROL_CONFIRM):
                     self.level.loot_select()
 
+                if (self.level.map[self.level.roomx][self.level.roomy].type == 2 and event.key in CONTROL_CONFIRM):
+                    self.level.minigame_select()
+
                 if event.key in CONTROL_CONFIRM and self.level.can_move_next_room() != -1:
                     self.level.next_room()
 
