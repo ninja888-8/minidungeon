@@ -43,12 +43,6 @@ class Ranged:
         self.x = max(90, self.x)
         self.x = min(660, self.x)
 
-    def attack(self, person_x, person_y):
-        if abs(person_x - self.x) + abs(person_y - self.y) <= (archer_slime.get_size()[0]/2 + 10 + self.stage):
-            return True
-        else:
-            return False
-
     def draw_bg(self, screen):
         screen.blit(archer_slime, (self.x-archer_slime.get_size()[0]/2, self.y-archer_slime.get_size()[1]/2))
         pygame.draw.rect(screen, (0,0,0), pygame.Rect(self.x-archer_slime.get_size()[0]/2-5, self.y-archer_slime.get_size()[0]/2-10, archer_slime.get_size()[0]+10, 9))
@@ -97,7 +91,7 @@ class Projectile:
         return True
 
     def attack(self, person_x, person_y):
-        if abs(person_x - self.x) <= projectile.get_size()[0]/2 + 15 and abs(person_y - self.y - self.pos[self.idx]) <= projectile.get_size()[1]/2 + 15:
+        if abs(person_x - self.x + 9) + abs(person_y - self.y - self.pos[self.idx] + 9) <= projectile.get_size()[0]/2 + 8:
             return True
         else:
             return False
@@ -195,15 +189,25 @@ class Boss:
 
 # minigame rooms
 class Minigame:
-    def __init__(self, stage):
+    def __init__(self, stage, rooms, gold, enemies):
         self.screen = pygame.Surface((WINDOW_LENGTH, WINDOW_HEIGHT))
-        self.type = random.randint(0,1)
+        if stage != 0:
+            self.type = 2
+        else:
+            self.type = random.randint(0,1)
         self.selected = False
         self.delay = 0
 
         self.level = 1
         self.current = -1
         self.gave_money = False
+
+        self.option = 0
+        self.choices = [[0 for i in range(3)] for j in range(4)]
+        self.rooms = rooms
+        self.gold = gold
+        self.enemies = enemies
+        self.answer = [random.randint(0,3), random.randint(0,3), random.randint(0,3)]
 
         if self.type == 0:
             self.range_low = random.randint(0,19)
@@ -212,6 +216,30 @@ class Minigame:
             self.x = random.randint(50,700)
             self.y = random.randint(50,600)
             self.time = pygame.time.get_ticks()
+        elif self.type == 2:
+            for i in range(4):
+                if i == self.answer[0]:
+                    self.choices[i][0] = self.rooms
+                else:
+                    self.choices[i][0] = random.randint(-1*self.rooms,15) + self.rooms
+                    while self.choices[i][0] == self.rooms:
+                        self.choices[i][0] = random.randint(-1*self.rooms,15) + self.rooms
+            
+            for i in range(4):
+                if i == self.answer[1]:
+                    self.choices[i][1] = self.gold
+                else:
+                    self.choices[i][1] = random.randint(-1*self.gold,30) + self.gold
+                    while self.choices[i][1] == self.gold:
+                        self.choices[i][1] = random.randint(-1*self.gold,30) + self.gold
+
+            for i in range(4):
+                if i == self.answer[2]:
+                    self.choices[i][2] = self.enemies
+                else:
+                    self.choices[i][2] = random.randint(-1*self.enemies,15) + self.enemies
+                    while self.choices[i][2] == self.enemies:
+                        self.choices[i][2] = random.randint(-1*self.enemies,15) + self.enemies
 
         pygame.font.init()
         self.my_font = pygame.font.SysFont('Courier New', 24)
@@ -222,10 +250,10 @@ class Minigame:
             self.selected = True
             self.delay = pygame.time.get_ticks() + 1000
             self.time = pygame.time.get_ticks() + 1000
-    
+
     def play(self, screen, mouse_x, mouse_y):
         if self.type == 0:
-            if self.range_low <= self.current <= self.range_high or self.range_low <= (59-self.current) <= self.range_high:
+            if self.range_low <= self.current <= self.range_high+1 or self.range_low <= (59-self.current) <= self.range_high+1:
                 if self.level == 3:
                     self.type = -1
                     if self.current <= 29:
@@ -259,14 +287,25 @@ class Minigame:
                         self.level += 1
                         self.x = random.randint(50,700)
                         self.y = random.randint(50,600)
+        elif self.type == 2:
+            if self.answer[self.level-1] == self.option:
+                if self.level == 3:
+                    self.type = -1
+                else:
+                    self.level += 1
+                    self.option = 0
+            else:
+                self.type = -2
 
     def draw_bg(self, screen, person_x, person_y):
         screen.blit(bg_default, (50,50))
         if not self.selected or self.delay > pygame.time.get_ticks():
             if not self.selected:
                 pygame.draw.rect(screen, (0,0,0), pygame.Rect(350, 350, 50, 50))
-            else:
+            elif self.type != -2:
                 pygame.draw.rect(screen, (100,255,100), pygame.Rect(350, 350, 50, 50))
+            else:
+                pygame.draw.rect(screen, (255,100,100), pygame.Rect(350, 350, 50, 50))
 
             if 330 <= person_x <= 420 and 330 <= person_y <= 420:
                 pygame.draw.rect(screen, (255,255,255), pygame.Rect(50, 550, 650, 150))
@@ -295,11 +334,25 @@ class Minigame:
             pygame.draw.rect(screen, (100,100,127), pygame.Rect(self.x-22,self.y-22,44,44))
 
             pygame.draw.rect(screen, (0,0,0), pygame.Rect(50, 650, 650, 50))
-            pygame.draw.rect(screen, (255,100,100), pygame.Rect(55, 660, (640.0)*(12000-pygame.time.get_ticks()+self.time)/12000, 40))
+            pygame.draw.rect(screen, (255,100,100), pygame.Rect(55, 655, (640.0)*(12000-pygame.time.get_ticks()+self.time)/12000, 40))
         elif self.type == 2:
             # trivia minigame (3 questions, num rooms? enemies? num X rooms?)
-            print()
+            pygame.draw.rect(screen, (255,255,255), pygame.Rect(50, 550, 650, 150))
+            screen.blit(self.tiny_font.render("[Press %s To Select...]" % pygame.key.name(CONTROL_CONFIRM[0]), True, (0,0,0)), (450, 670))
+            if self.level == 1:
+                screen.blit(self.my_font.render("how many rooms have you explored (including shop)?", True, (0,0,0)), (75, 575))
+                screen.blit(self.my_font.render("(not including the current stage)", True, (0,0,0)), (75, 600))
+            elif self.level == 2:
+                screen.blit(self.my_font.render("how much gold have you earned?", True, (0,0,0)), (75, 575))
+                screen.blit(self.my_font.render("(not including the current stage)", True, (0,0,0)), (75, 600))
+            elif self.level == 3:
+                screen.blit(self.my_font.render("how many regular enemies have you encountered?", True, (0,0,0)), (75, 575))
+                screen.blit(self.my_font.render("(not including the current stage)", True, (0,0,0)), (75, 600))
 
+            for i in range(4):
+                pygame.draw.rect(screen, (255,255,255), pygame.Rect(50, 100 + i*100, 650, 75))
+                screen.blit(self.my_font.render(str(self.choices[i][self.level-1]), True, (0,0,0)), (400, 110 + i*100))
+            screen.blit(arrow_default, (80,100+self.option*100))
 
 # loot rooms
 class Loot:
@@ -385,7 +438,7 @@ class Loot:
             screen.blit(self.tiny_font.render("[Press %s To Select...]" % pygame.key.name(CONTROL_CONFIRM[0]), True, (0,0,0)), (450, 670))
             screen.blit(self.my_font.render("blessing of " + str(self.names[self.indices[2]]), True, (0,0,0)), (75, 575))
             if self.indices[2] == 4:
-                screen.blit(self.my_font.render(str(self.chances[4]) + "% to gain " + str(2+self.stage//3) + " atk (otherwise lose " + str(1+self.stage//3) + ")", True, (0,0,0)), (75, 600))
+                screen.blit(self.my_font.render(str(self.chances[4]) + "% to gain " + str(1.5+self.stage//3) + " atk (otherwise lose " + str(1+self.stage//3) + ")", True, (0,0,0)), (75, 600))
             else:
                 screen.blit(self.my_font.render(str(self.chances[5]) + "% to gain " + str(10+self.stage//3) + " atk range (otherwise lose " + str(8+self.stage//3) + ")", True, (0,0,0)), (75, 600))
         
@@ -398,7 +451,7 @@ class Shop:
         self.price = [5*stage, 5*stage, 5*stage]
 
         for i in range(3):
-            self.price[i] += random.randint(15+5*i,25+5*i)
+            self.price[i] += random.randint(15+7*i,25+7*i)
 
         pygame.font.init()
         self.my_font = pygame.font.SysFont('Courier New', 24)
@@ -451,7 +504,8 @@ class Shop:
             screen.blit(self.my_font.render("gain 1 attack", True, (0,0,0)), (75, 625))
         elif 280 <= person_x <= 470 and 80 <= person_y <= 270:
             pygame.draw.rect(screen, (255,255,255), pygame.Rect(50, 550, 650, 150))
-            screen.blit(self.tiny_font.render("[Press %s To Continue To Next Stage...]" % pygame.key.name(CONTROL_CONFIRM[0]), True, (0,0,0)), (450, 670))
+            screen.blit(self.tiny_font.render("[Press %s To Continue To Next Stage...]" % pygame.key.name(CONTROL_CONFIRM[0]), True, (0,0,0)), (350, 670))
+            screen.blit(self.my_font.render("[???]", True, (0,0,0)), (75, 575))
 
         screen.blit(portal_default, (300,100))
 
@@ -467,7 +521,7 @@ class Select:
         screen.blit(self.my_font.render("mini dungeon level select!", True, (0,0,0)), (200,125))
 
         pygame.draw.rect(screen, (255,255,255), pygame.Rect(200, 250, 600, 100))
-        screen.blit(self.my_font.render("-------------", True, (0,0,0)), (340, 270))
+        screen.blit(self.my_font.render("----------------", True, (0,0,0)), (340, 270))
 
         pygame.draw.rect(screen, (255,255,255), pygame.Rect(200, 400, 600, 100))
         screen.blit(self.my_font.render("endless mode!", True, (0,0,0)), (320, 420))
@@ -491,6 +545,10 @@ class Room:
         self.enemies = []
         self.projectiles = []
         self.num_enemies = 0
+
+        pygame.font.init()
+        self.my_font = pygame.font.SysFont('Courier New', 24)
+        self.tiny_font = pygame.font.SysFont('Courier New', 14)
 
     def attacked(self, damage, atk_range, person_x, person_y):
         for i in range(self.num_enemies):
@@ -529,6 +587,8 @@ class Room:
         for i in range(math.ceil((self.num_enemies-normal)/2)):
             self.enemies.append(Ranged(self.stage, True))
         self.num_enemies = len(self.enemies)
+
+        return self.num_enemies
 
     def draw_enemies(self, screen, person_x, person_y):
         attacked = False
@@ -583,7 +643,6 @@ class Room:
         return attacked
     
     def draw_bg(self, screen, person_x, person_y):
-        screen.blit(bg_default, (50,50))
         if self.type == 1 and not self.cleared:
             if self.draw_boss(screen, person_x, person_y):
                 return True
@@ -592,6 +651,11 @@ class Room:
                 return True
         if self.type == 1 and self.cleared:
             screen.blit(portal_default, (300,300))
+
+            if 280 <= person_x <= 470 and 280 <= person_y <= 470:
+                pygame.draw.rect(screen, (255,255,255), pygame.Rect(50, 550, 650, 150))
+                screen.blit(self.tiny_font.render("[Press %s To Continue To Shop...]" % pygame.key.name(CONTROL_CONFIRM[0]), True, (0,0,0)), (375, 670))
+                screen.blit(self.my_font.render("[???]", True, (0,0,0)), (75, 575))
         
 # actual game screen
 class Level:
@@ -601,10 +665,11 @@ class Level:
         self.stage = stage                                       # how deep in the dungeon
         self.rooms_explored = 0
         self.gold_earned = 0
+        self.enemies_encountered = 0
         self.map = [[0 for i in range(5)] for j in range(5)]     # minimap square colours
         self.adj = [[False for i in range(5)] for j in range(5)] # if this room had been adjacent previously
 
-        self.minigame = Minigame(0)
+        self.minigame = Minigame(0,0,0,0)
         self.shopping = False
         self.roomx = 2
         self.roomy = 2
@@ -735,11 +800,13 @@ class Level:
         if 0 <= num <= 1:
             self.y = 715-self.y
             self.roomy += (num*2 - 1)
-            self.rooms_explored += 1
+            if self.map[self.roomx][self.roomy].type != -1:
+                self.rooms_explored += 1
         elif 2 <= num <= 3:
             self.x = 740-self.x
             self.roomx += (num*2 - 5)
-            self.rooms_explored += 1
+            if self.map[self.roomx][self.roomy].type != -1:
+                self.rooms_explored += 1
 
         if self.roomx != 0:
             self.adj[self.roomx-1][self.roomy] = True
@@ -753,7 +820,7 @@ class Level:
         # generate enemies
         if self.map[self.roomx][self.roomy].type == 4:
             self.can_move = False
-            self.map[self.roomx][self.roomy].generate_enemies()
+            self.enemies_encountered += self.map[self.roomx][self.roomy].generate_enemies()
             cur_time = pygame.time.get_ticks()
             self.next_get_hit_time = cur_time + 2000
             self.next_attack_time = cur_time + 2000
@@ -765,7 +832,7 @@ class Level:
 
         # generate minigame
         if self.map[self.roomx][self.roomy].type == 2:
-            self.minigame = Minigame(self.stage)
+            self.minigame = Minigame(self.stage, self.rooms_explored-1, self.gold_earned, self.enemies_encountered)
 
         # generate boss
         if self.map[self.roomx][self.roomy].type == 1 and not self.can_move_next_stage:
@@ -859,7 +926,7 @@ class Level:
                 self.defence += 1
         elif num == 2:
             if self.loot.indices[2] == 4:
-                self.atk += 2+self.stage//3
+                self.atk += 1.5+self.stage//3
             else:
                 self.atk_range += 10+self.stage//3
         elif num == -2:
@@ -881,8 +948,15 @@ class Level:
         # layout: main game screen + sidebar with minimap, health, items, etc.
         # need to add transitions to each stages in the future
 
+        screen.blit(bg_default, (50,50))
         self.move()
         pygame.draw.rect(screen, (255,255,255), pygame.Rect(750, 0, 250, 750))
+
+        if self.animation_frame != -1 and not self.map[self.roomx][self.roomy].type == 2:
+            pygame.draw.circle(screen, (255,127,127), (self.atk_x,self.atk_y), (int)(min(self.animation_frame,50)/50.0 * (self.atk_range-15)))
+            self.animation_frame += 1
+            if self.animation_frame == 100 + 25 * person_type1.get_size()[0] // (self.atk_range-15):
+                self.animation_frame = -1
 
         self.draw_minimap(screen)
         self.draw_stats(screen)
@@ -903,13 +977,7 @@ class Level:
             screen.blit(self.my_font.render("do you wish to move?", True, (0,0,0)), (50,700))
             screen.blit(self.tiny_font.render("[Press %s To Continue...]" % pygame.key.name(CONTROL_CONFIRM[0]), True, (0,0,0)), (470, 705))
 
-        if self.animation_frame != -1 and not self.map[self.roomx][self.roomy].type == 2:
-            pygame.draw.circle(screen, (255,127,127), (self.atk_x,self.atk_y), (int)(self.animation_frame/50.0 * (self.atk_range-15)))
-            self.animation_frame += 1
-            if self.animation_frame == 51:
-                self.animation_frame = -1
-
-        if not self.minigame.selected or self.minigame.type < 0:
+        if not self.minigame.selected or self.minigame.type < 0 or not self.map[self.roomx][self.roomy].type == 2:
             screen.blit(person_type1, (self.x-person_type1.get_size()[0]/2, self.y-person_type1.get_size()[1]/2))
                 
 # game over screen
@@ -972,6 +1040,7 @@ class Tutorial:
         self.stage = 0
         self.map = [[0 for i in range(5)] for j in range(5)]     # minimap square colours
         self.adj = [[False for i in range(5)] for j in range(5)] # if this room had been adjacent previously
+        self.minigame = Minigame(0,0,0,0)
 
         self.shopping = False
         self.roomx = 2
@@ -987,12 +1056,15 @@ class Tutorial:
 
         self.next_move_time = pygame.time.get_ticks()
         self.next_attack_time = pygame.time.get_ticks()
+        self.animation_frame = -1
+        self.atk_x = -1
+        self.atk_y = -1
         
         # default stats
         self.lives = 3
         self.atk = 1
         self.defence = 0
-        self.atk_range = 30
+        self.atk_range = 50
         self.gold = 0
         self.generate_rooms()
 
@@ -1028,6 +1100,8 @@ class Tutorial:
                             skip = True
                     except ValueError:
                         position = -1
+            
+            pygame.event.clear()
 
         else:
             for i in range(len(message)):
@@ -1191,7 +1265,9 @@ class Tutorial:
         cur_time = pygame.time.get_ticks()
         if cur_time >= self.next_attack_time:
             self.next_attack_time = cur_time + 1000
-            # insert attack animation
+            self.animation_frame = 25 * person_type1.get_size()[0] // (self.atk_range-15)
+            self.atk_x = self.x
+            self.atk_y = self.y
             if self.map[self.roomx][self.roomy].type == 1 or self.map[self.roomx][self.roomy].type == 4:
                 num = self.map[self.roomx][self.roomy].attacked(self.atk, self.atk_range, self.x, self.y)
                 if num > 0:
@@ -1204,35 +1280,48 @@ class Tutorial:
         elif num == 1:
             self.atk_range += 10
         elif num == 2:
-            self.atk += 2+self.stage//3
+            self.atk += 1.5+self.stage//3
         elif num == -2:
             self.atk -= 1+self.stage//3
             self.atk = max(self.atk, 1)
     
     def draw_game_bg(self, screen):
+        # layout: main game screen + sidebar with minimap, health, items, etc.
+        # need to add transitions to each stages in the future
+
+        screen.blit(bg_default, (50,50))
         self.move()
+        pygame.draw.rect(screen, (255,255,255), pygame.Rect(750, 0, 250, 750))
+
+        if self.animation_frame != -1 and not self.map[self.roomx][self.roomy].type == 2:
+            pygame.draw.circle(screen, (255,127,127), (self.atk_x,self.atk_y), (int)(min(self.animation_frame,50)/50.0 * (self.atk_range-15)))
+            self.animation_frame += 1
+            if self.animation_frame == 100 + 25 * person_type1.get_size()[0] // (self.atk_range-15):
+                self.animation_frame = -1
+
         self.draw_minimap(screen)
         self.draw_stats(screen)
         if self.shopping:
             self.shop.draw_bg(screen, self.x, self.y)
         elif self.map[self.roomx][self.roomy].type == 3:
             self.loot.draw_bg(screen, self.x, self.y)
-        else:
-            self.map[self.roomx][self.roomy].draw_bg(screen, self.x, self.y)
+        elif self.map[self.roomx][self.roomy].type == 2:
+            self.minigame.draw_bg(screen, self.x, self.y)
+        self.map[self.roomx][self.roomy].draw_bg(screen, self.x, self.y)
 
         if self.can_move_next_room() != -1:
-            screen.blit(self.my_font.render("do u wish to move?", True, (0,0,0)), (250,300))
+            screen.blit(self.my_font.render("do u wish to move?", True, (0,0,0)), (250,350))
 
         screen.blit(person_type1, (self.x-person_type1.get_size()[0]/2, self.y-person_type1.get_size()[1]/2))
 
     def draw_bg(self, screen):
         pygame.draw.rect(screen, (255,255,255), pygame.Rect(750, 0, 250, 750))
         if self.slide == 1:
+            screen.blit(narrator, (125,50))
             self.draw_message(screen, "welcome to minidungeon! ")
-            screen.blit(narrator, (125,50))
         elif self.slide == 2:
-            self.draw_message(screen, "minidungeon is an endless dungeon crawler game where you will need to fight enemies and earn some loot along the way! ")
             screen.blit(narrator, (125,50))
+            self.draw_message(screen, "minidungeon is an endless dungeon crawler game where you will need to fight enemies and earn some loot along the way! ")
         elif self.slide == 3:
             self.draw_game_bg(screen)
             self.draw_message(screen, "Use WASD or arrow keys to move. Try it yourself! ")
@@ -1262,19 +1351,20 @@ class Tutorial:
             self.draw_message(screen, "Loot rooms contain three choices of loot by random chance, and you may select one choice using Enter when you are near the black square. ")
         elif self.slide == 12:
             self.draw_game_bg(screen)
-            self.draw_message(screen, "(insert text about minigame rooms). ")
+            self.draw_message(screen, "In minigame rooms, you can wager 5 coins for the chance to win 10 coins in a random minigame! (find out later!)")
         elif self.slide == 13:
             self.draw_game_bg(screen)
             self.draw_message(screen, "The boss room contains a high-hp boss that will spawn a random number of enemies every once and a while, and you must kill the boss to enter the next stage. ")
         elif self.slide == 14:
+            self.map[self.roomx][self.roomy].type = -1
             self.draw_game_bg(screen)
             self.draw_message(screen, "After each successful boss fight, you will be placed into a shop where you can buy things using gold. ")
         elif self.slide == 15:
+            screen.blit(narrator, (125,50))
             self.draw_message(screen, "If you run out of lives, you will be placed into the game over screen, where you can then return to the main menu. ")
-            screen.blit(narrator, (125,50))
         elif self.slide == 16:
-            self.draw_message(screen, "And that's it! You may now go back to the main menu. ")
             screen.blit(narrator, (125,50))
+            self.draw_message(screen, "And that's it! You may now go back to the main menu. ")
 
 # credits screen
 class Credits:

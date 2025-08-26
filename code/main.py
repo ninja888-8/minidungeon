@@ -162,12 +162,6 @@ class Game:
                         self.tutorial.next_stage()
                     elif self.tutorial.slide == 17:
                         self.state = 0
-                elif self.tutorial.map[self.tutorial.roomx][self.tutorial.roomy].type == 1 and self.tutorial.map[self.tutorial.roomx][self.tutorial.roomy].cleared and 280 <= self.tutorial.x <= 470 and 280 <= self.tutorial.y <= 470 and not self.tutorial.shopping and event.key in CONTROL_CONFIRM:
-                    self.tutorial.next_stage()
-                elif self.tutorial.shopping and event.key in CONTROL_CONFIRM:
-                    self.tutorial.shop_select()
-                elif (self.tutorial.map[self.tutorial.roomx][self.tutorial.roomy].type == 3 and event.key in CONTROL_CONFIRM):
-                    self.tutorial.loot_select()
 
             if event.type == pygame.KEYUP:
                 if event.key in CONTROL_CONFIRM:
@@ -241,6 +235,14 @@ class Game:
 
                 if self.level.map[self.level.roomx][self.level.roomy].type == 2 and event.key in CONTROL_CONFIRM:
                     self.level.minigame_select(-1, -1)
+
+                if self.level.map[self.level.roomx][self.level.roomy].type == 2 and self.level.minigame.type == 2 and event.key in CONTROL_D:
+                    self.level.minigame.option += 1
+                    self.level.minigame.option %= 4
+
+                if self.level.map[self.level.roomx][self.level.roomy].type == 2 and self.level.minigame.type == 2 and event.key in CONTROL_U:
+                    self.level.minigame.option += 3
+                    self.level.minigame.option %= 4
 
                 if event.key in CONTROL_CONFIRM and self.level.can_move_next_room() != -1:
                     self.level.next_room()
