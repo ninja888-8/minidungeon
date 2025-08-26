@@ -23,17 +23,33 @@ CONTROL_L = (pygame.K_a, pygame.K_LEFT)
 CONTROL_R = (pygame.K_d, pygame.K_RIGHT)
 CONTROL_CONFIRM = (pygame.K_e, pygame.K_RETURN)
 
+#default
 bg_default = pygame.image.load(os.path.join("images", "bg_default.png"))
 arrow_default = pygame.image.load(os.path.join("images", "arrow_default.png"))
 person_default = pygame.image.load(os.path.join("images", "person_default.png"))
 enemy_default = pygame.image.load(os.path.join("images", "enemy_default.png"))
 portal_default = pygame.image.load(os.path.join("images", "portal_default.png"))
 
+#enemies
 enemy_slime = pygame.image.load(os.path.join("images", "enemy_slime.png"))
 archer_slime = pygame.image.load(os.path.join("images", "archer_slime.png"))
 boss_slime = pygame.image.load(os.path.join("images", "boss_slime.png"))
 projectile = pygame.image.load(os.path.join("images", "projectile.png"))
+
+#characters
 person_type1 = pygame.image.load(os.path.join("images", "person_type1.png"))
 narrator = pygame.image.load(os.path.join("images", "narrator.png"))
+
+#icons
 background_slime_1 = pygame.image.load(os.path.join("images", "background_slime_1.png"))
 background_slime_2 = pygame.image.load(os.path.join("images", "background_slime_2.png"))
+gain_atk = pygame.image.load(os.path.join("images", "gain_atk.png"))
+gain_def = pygame.image.load(os.path.join("images", "gain_def.png"))
+gain_gold = pygame.image.load(os.path.join("images", "gain_gold.png"))
+gain_life = pygame.image.load(os.path.join("images", "gain_life.png"))
+gain_range = pygame.image.load(os.path.join("images", "gain_range.png"))
+
+#backdrops
+bg_boss = pygame.image.load(os.path.join("images", "bg_boss.png"))
+bg_battle = pygame.image.load(os.path.join("images", "bg_battle.png"))
+bg_default_2 = pygame.image.load(os.path.join("images", "bg_default_2.png"))
