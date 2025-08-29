@@ -100,6 +100,9 @@ class Game:
                     self.menu.option %= 4
 
                 if event.key in CONTROL_CONFIRM:
+                    if 0 <= self.menu.option <= 3:
+                        self.menu.button_animation(self.screen, self.menu.option)
+
                     if self.menu.option == 0:
                         self.state = 1
                         self.tutorial = Tutorial()
@@ -188,6 +191,9 @@ class Game:
                     self.select.option %= 3
 
                 if event.key in CONTROL_CONFIRM:
+                    if 0 <= self.select.option <= 2:
+                        self.select.button_animation(self.screen, self.select.option)
+
                     if self.select.option == 0:
                         self.type = 0
                         self.state = 3
@@ -244,7 +250,7 @@ class Game:
                     self.level.minigame.option += 3
                     self.level.minigame.option %= 4
 
-                if event.key in CONTROL_CONFIRM and self.level.can_move_next_room() != -1:
+                if event.key in CONTROL_CONFIRM and 0 <= self.level.can_move_next_room() <= 3:
                     self.level.next_room()
 
             if event.type == pygame.KEYUP:
@@ -289,6 +295,7 @@ class Game:
 
             if event.type == pygame.KEYDOWN:
                 if event.key in CONTROL_CONFIRM:
+                    self.credits.button_animation(self.screen)
                     self.state = 0
 
 pygame.init()

@@ -4,7 +4,7 @@ import random
 from settings import *
 
 class Ranged:
-    def __init__(self, stage, money):
+    def __init__(self, stage, give_money, current_event):
         self.screen = pygame.Surface((WINDOW_LENGTH, WINDOW_HEIGHT))
         self.spawning = True
         self.spawn_time = pygame.time.get_ticks()
@@ -12,7 +12,21 @@ class Ranged:
         self.last_shoot_time = self.spawn_time
         self.hp = self.max_hp = random.randint(1,2+stage)
         self.stage = stage
-        self.money = money
+
+        if give_money:
+            self.money = self.hp
+        else:
+            self.money = 0
+        
+        if current_event == 1: # increase health event
+            self.hp *= 2
+            self.max_hp *= 2
+        elif current_event == 2: # increase gold event
+            if self.money % 2 == 0:
+                self.money *= 1.5
+            else:
+                self.money *= 1.5
+                self.money += 0.5
 
         self.x = random.randint(100,650)
         self.y = random.randint(100,650)
@@ -62,28 +76,24 @@ class Projectile:
         self.pos = []
         if slope == -100000:
             for i in range(675-y):
-                self.pos.append(i)
+                self.pos.append([x,y+2*i])
         elif slope == 100000:
             for i in range(y):
-                self.pos.append(-i)
+                self.pos.append([x,y-2*i])
         elif not left:
-            for i in range(675-x):
-                self.pos.append(round(slope*i))
+            for i in range(675):
+                self.pos.append([x+2*i*math.sqrt(1/(1+slope*slope)), y+slope*2*i*math.sqrt(1/(1+slope*slope))])
         elif left:
-            for i in range(x):
-                self.pos.append(round(-slope*i))
-
+            for i in range(675):
+                self.pos.append([x-2*i*math.sqrt(1/(1+slope*slope)), y-slope*2*i*math.sqrt(1/(1+slope*slope))])
+        print(slope)
         self.idx = 0
 
     def move(self):
         cur_time = pygame.time.get_ticks()
 
         if cur_time >= self.next_move_time:
-            self.next_move_time = cur_time + 5
-            if self.left and self.slope != -100000 and self.slope != 100000:
-                self.x -= 1
-            elif not self.left and self.slope != -100000 and self.slope != 100000:
-                self.x += 1
+            self.next_move_time = cur_time + 1
             self.idx += 1
             if self.idx >= len(self.pos):
                 return False
@@ -91,25 +101,43 @@ class Projectile:
         return True
 
     def attack(self, person_x, person_y):
-        if abs(person_x - self.x + 9) + abs(person_y - self.y - self.pos[self.idx] + 9) <= projectile.get_size()[0]/2 + 8:
+        if abs(person_x - self.pos[self.idx][0] + 9) + abs(person_y - self.pos[self.idx][1] + 9) <= projectile.get_size()[0]/2 + 8:
             return True
         else:
             return False
 
     def draw_bg(self, screen):
-        screen.blit(projectile, (self.x-projectile.get_size()[0]/2, self.y+self.pos[self.idx]-projectile.get_size()[1]/2))
+        screen.blit(projectile, (self.pos[self.idx][0]-projectile.get_size()[0]/2, self.pos[self.idx][1]-projectile.get_size()[1]/2))
 
 # melee enemies in the game!
 class Enemy:
-    def __init__(self, type, stage, money):
+    def __init__(self, type, stage, give_money, current_event):
         self.screen = pygame.Surface((WINDOW_LENGTH, WINDOW_HEIGHT))
         self.spawning = True
         self.spawn_time = pygame.time.get_ticks()
         self.next_move_time = self.spawn_time + 2000
-        self.hp = self.max_hp = random.randint(2,2+stage)
+
+        if type == 0: # regular guy
+            self.hp = self.max_hp = random.randint(2,2+stage)
+        elif type == 1:
+            self.hp = self.max_hp = random.randint(4,4+2*stage)
+
         self.type = type
         self.stage = stage
-        self.money = money
+        if give_money:
+            self.money = self.hp
+        else:
+            self.money = 0
+        
+        if current_event == 1: # increase health event
+            self.hp *= 2
+            self.max_hp *= 2
+        elif current_event == 2: # increase gold event
+            if self.money % 2 == 0:
+                self.money *= 1.5
+            else:
+                self.money *= 1.5
+                self.money += 0.5
 
         self.x = random.randint(100,650)
         self.y = random.randint(100,650)
@@ -118,7 +146,11 @@ class Enemy:
         cur_time = pygame.time.get_ticks()
 
         if cur_time >= self.next_move_time:
-            self.next_move_time = cur_time + 10
+            if self.type == 0:
+                self.next_move_time = cur_time + 10
+            elif self.type == 1:
+                self.next_move_time = cur_time + 20
+
             if person_x != self.x or person_y != self.y:
                 choice = random.randint(0,1)
                 if choice == 0 or person_y == self.y:
@@ -146,19 +178,32 @@ class Enemy:
             screen.blit(enemy_default, (self.x-enemy_default.get_size()[0]/2, self.y-enemy_default.get_size()[1]/2))
         elif self.type == 0:
             screen.blit(enemy_slime, (self.x-enemy_slime.get_size()[0]/2, self.y-enemy_slime.get_size()[1]/2))
+        elif self.type == 1:
+            screen.blit(enemy_slime_tank, (self.x-enemy_slime_tank.get_size()[0]/2, self.y-enemy_slime_tank.get_size()[1]/2))
         pygame.draw.rect(screen, (0,0,0), pygame.Rect(self.x-enemy_slime.get_size()[0]/2-5, self.y-enemy_slime.get_size()[0]/2-10, enemy_slime.get_size()[0]+10, 9))
         pygame.draw.rect(screen, (255,100,100), pygame.Rect(self.x-enemy_slime.get_size()[0]/2-3, self.y-enemy_slime.get_size()[0]/2-8, (enemy_slime.get_size()[0]+6.0)*self.hp/self.max_hp, 5))
 
 # boss enemy in the game
 class Boss:
-    def __init__(self, type, stage):
+    def __init__(self, type, stage, current_event):
         self.screen = pygame.Surface((WINDOW_LENGTH, WINDOW_HEIGHT))
         self.spawn_time = pygame.time.get_ticks()
         self.next_spawn_time = self.spawn_time + 2000
-        self.max_hp = 20+5*stage
-        self.hp = 20+5*stage
+        self.hp = self.max_hp = 20+5*stage
         self.stage = stage
         self.type = type
+        self.money = self.hp
+        self.current_event = current_event
+
+        if current_event == 1: # increase health event
+            self.hp *= 2
+            self.max_hp *= 2
+        elif current_event == 2: # increase gold event
+            if self.money % 2 == 0:
+                self.money *= 1.5
+            else:
+                self.money *= 1.5
+                self.money += 0.5
 
         self.x = 375
         self.y = 375
@@ -174,9 +219,13 @@ class Boss:
         num = random.randint(2,min(5,3+self.stage//5))
         normal = random.randint(num-2, num)
         for i in range(normal):
-            l.append(Enemy(self.type, self.stage, False))
+            rand = random.randint(1,100)
+            if rand > 15:
+                l.append(Enemy(0, self.stage, False, self.current_event))
+            else:
+                l.append(Enemy(1, self.stage, False, self.current_event))
         for i in range((num-normal)//2):
-            l.append(Ranged(self.stage, False))
+            l.append(Ranged(self.stage, False, self.current_event))
         return l
 
     def draw_bg(self, screen):
@@ -246,8 +295,17 @@ class Minigame:
         self.my_font = pygame.font.SysFont('Courier New', 24)
         self.tiny_font = pygame.font.SysFont('Courier New', 14)
     
+    def message(self, screen, won):
+        pygame.draw.rect(screen, (255,255,255), pygame.Rect(50, 550, 650, 150))
+        if won:
+            screen.blit(self.my_font.render("you won!", True, (0,0,0)), (100, 575))
+        else:
+            screen.blit(self.my_font.render("you lost :(", True, (0,0,0)), (100, 575))
+        pygame.display.flip()
+        pygame.time.wait(1000)
+
     def select(self, person_x, person_y):
-        if not self.selected or self.delay > pygame.time.get_ticks() and 330 <= person_x <= 420 and 330 <= person_y <= 420:
+        if 330 <= person_x <= 420 and 330 <= person_y <= 420:
             self.selected = True
             self.delay = pygame.time.get_ticks() + 1000
             self.time = pygame.time.get_ticks() + 1000
@@ -299,7 +357,11 @@ class Minigame:
                 self.type = -2
 
     def draw_bg(self, screen, person_x, person_y):
-        if not self.selected or self.delay > pygame.time.get_ticks():
+        if self.type == -1 and not self.gave_money:
+            self.message(screen, True)
+        elif self.type == -2 and not self.gave_money:
+            self.message(screen, False)
+        elif not self.selected or self.delay > pygame.time.get_ticks():
             if not self.selected:
                 pygame.draw.rect(screen, (0,0,0), pygame.Rect(350, 350, 50, 50))
             elif self.type != -2:
@@ -325,8 +387,7 @@ class Minigame:
             else:
                 pygame.draw.rect(screen, (255,255,100), pygame.Rect(150+15*(59-self.current), 350, 14, 50))
             pygame.display.flip()
-            if len(pygame.event.get()) == 0:
-                pygame.time.wait(10)
+            pygame.time.wait(10)
             self.current += 1
             self.current %= 60
         elif self.type == 1:
@@ -336,6 +397,11 @@ class Minigame:
 
             pygame.draw.rect(screen, (0,0,0), pygame.Rect(50, 650, 650, 50))
             pygame.draw.rect(screen, (255,100,100), pygame.Rect(55, 655, (640.0)*(12000-pygame.time.get_ticks()+self.time)/12000, 40))
+
+            if pygame.time.get_ticks() > self.time + 12000:
+                self.type = -2
+                self.message(screen, False)
+
         elif self.type == 2:
             # trivia minigame (3 questions, num rooms? enemies? num X rooms?)
             pygame.draw.rect(screen, (255,255,255), pygame.Rect(50, 550, 650, 150))
@@ -354,6 +420,7 @@ class Minigame:
                 pygame.draw.rect(screen, (255,255,255), pygame.Rect(50, 100 + i*100, 650, 75))
                 screen.blit(self.my_font.render(str(self.choices[i][self.level-1]), True, (0,0,0)), (400, 110 + i*100))
             screen.blit(arrow_default, (80,100+self.option*100))
+            screen.blit(arrow_2_default, (820,100+self.option*100))
 
 # loot rooms
 class Loot:
@@ -515,28 +582,6 @@ class Shop:
 
         screen.blit(portal_default, (300,100))
 
-# game select screen
-class Select:
-    def __init__(self):
-        self.screen = pygame.Surface((WINDOW_LENGTH, WINDOW_HEIGHT))
-        self.option = 0
-        pygame.font.init()
-        self.my_font = pygame.font.SysFont('Calibri', 64)
-
-    def draw_bg(self, screen):
-        screen.blit(self.my_font.render("mini dungeon level select!", True, (0,0,0)), (200,125))
-
-        pygame.draw.rect(screen, (255,255,255), pygame.Rect(200, 250, 600, 100))
-        screen.blit(self.my_font.render("----------------", True, (0,0,0)), (340, 270))
-
-        pygame.draw.rect(screen, (255,255,255), pygame.Rect(200, 400, 600, 100))
-        screen.blit(self.my_font.render("endless mode!", True, (0,0,0)), (320, 420))
-
-        pygame.draw.rect(screen, (255,255,255), pygame.Rect(200, 550, 600, 100))
-        screen.blit(self.my_font.render("return to main menu?", True, (0,0,0)), (220, 570))
-
-        screen.blit(arrow_default, (80,260+self.option*150))
-
 # types of rooms
 class Room:
     def __init__(self, type, stage):
@@ -562,9 +607,7 @@ class Room:
                 self.enemies[i].hp -= damage
                 if self.enemies[i].hp <= 0:
                     self.num_enemies -= 1
-                    gold = self.enemies[i].max_hp
-                    if not self.enemies[i].money:
-                        gold = 0
+                    gold = self.enemies[i].money
                     self.enemies.pop(i)
                     if len(self.boss) == 0 and self.num_enemies == 0:
                         self.cleared = True
@@ -576,22 +619,26 @@ class Room:
                 if self.boss[0].hp <= 0:
                     self.enemies.clear()
                     self.num_enemies = 0
-                    gold = self.boss[0].max_hp
+                    gold = self.boss[0].money
                     self.boss.pop(0)
                     self.cleared = True
-                    return gold   
+                    return gold 
         return -1
 
-    def generate_boss(self):
-        self.boss.append(Boss(0, self.stage))
+    def generate_boss(self, current_event):
+        self.boss.append(Boss(0, self.stage, current_event))
 
-    def generate_enemies(self):
+    def generate_enemies(self, current_event):
         self.num_enemies = random.randint(1,min(10,3+self.stage//2))
         normal = random.randint(0,self.num_enemies)
         for i in range(normal):
-            self.enemies.append(Enemy(0, self.stage, True))
+            num = random.randint(1,100)
+            if num > 15:
+                self.enemies.append(Enemy(0, self.stage, True, current_event))
+            else:
+                self.enemies.append(Enemy(1, self.stage, True, current_event))
         for i in range(math.ceil((self.num_enemies-normal)/2)):
-            self.enemies.append(Ranged(self.stage, True))
+            self.enemies.append(Ranged(self.stage, True, current_event))
         self.num_enemies = len(self.enemies)
 
         return self.num_enemies
@@ -679,6 +726,7 @@ class Level:
         self.shopping = False
         self.roomx = 2
         self.roomy = 2
+        self.current_event = 0
 
         self.x = 375
         self.y = 375
@@ -786,14 +834,26 @@ class Level:
         if not self.map[self.roomx][self.roomy].cleared:
             return -1
 
-        if 310 <= self.x <= 440 and 90 <= self.y <= 100 and self.roomy != 0:
-            return 0
-        elif 310 <= self.x <= 440 and 650 <= self.y <= 660 and self.roomy != 4:
-            return 1
-        elif 90 <= self.x <= 100 and 310 <= self.y <= 440 and self.roomx != 0:
-            return 2
-        elif 650 <= self.x <= 660 and 310 <= self.y <= 440 and self.roomx != 4:
-            return 3
+        if 310 <= self.x <= 440 and 90 <= self.y <= 100:
+            if self.roomy != 0:
+                return 0
+            else:
+                return -2
+        elif 310 <= self.x <= 440 and 650 <= self.y <= 660:
+            if self.roomy != 4:
+                return 1
+            else:
+                return -2
+        elif 90 <= self.x <= 100 and 310 <= self.y <= 440:
+            if self.roomx != 0:
+                return 2
+            else:
+                return -2
+        elif 650 <= self.x <= 660 and 310 <= self.y <= 440:
+            if self.roomx != 4:
+                return 3
+            else:
+                return -2
         else:
             return -1
         
@@ -825,8 +885,15 @@ class Level:
 
         # generate enemies
         if self.map[self.roomx][self.roomy].type == 4:
+            # check if event occured
+            temp = random.randint(1,100)
+            if temp <= 20:
+                self.current_event = random.randint(1,4)
+                if self.current_event == 4: # doubles chance for 2x health without affecting others
+                    self.current_event == 1
+
             self.can_move = False
-            self.enemies_encountered += self.map[self.roomx][self.roomy].generate_enemies()
+            self.enemies_encountered += self.map[self.roomx][self.roomy].generate_enemies(self.current_event)
             cur_time = pygame.time.get_ticks()
             self.next_get_hit_time = cur_time + 2000
             self.next_attack_time = cur_time + 2000
@@ -842,8 +909,14 @@ class Level:
 
         # generate boss
         if self.map[self.roomx][self.roomy].type == 1 and not self.can_move_next_stage:
+            # check if event occured
+            temp = random.randint(1,100)
+            if temp <= 20:
+                if self.current_event == 4: # doubles chance for 2x health without affecting others
+                    self.current_event == 1
+
             self.can_move = False
-            self.map[self.roomx][self.roomy].generate_boss()
+            self.map[self.roomx][self.roomy].generate_boss(self.current_event)
             cur_time = pygame.time.get_ticks()
             self.next_get_hit_time = cur_time + 2000
             self.next_attack_time = cur_time + 2000
@@ -907,6 +980,11 @@ class Level:
                 if num > 0:
                     self.gold += num
                     self.gold_earned += num
+                    self.gold = round(self.gold)
+                    self.gold_earned = round(self.gold_earned)
+                
+                if self.map[self.roomx][self.roomy].cleared:
+                    self.current_event = 0
 
     def attacked(self):
         cur_time = pygame.time.get_ticks()
@@ -945,9 +1023,10 @@ class Level:
 
     def minigame_select(self, mouse_x, mouse_y):
         if not self.minigame.selected and self.gold >= 5:
-            self.gold -= 5
             self.minigame.select(self.x, self.y)
-        else:
+            if self.minigame.selected:
+                self.gold -= 5
+        elif self.minigame.selected:
             self.minigame.play(self.screen, mouse_x, mouse_y)
 
     def draw_bg(self, screen):
@@ -971,6 +1050,8 @@ class Level:
             if not self.minigame.gave_money and self.minigame.type == -1:
                 self.gold += 10
                 self.minigame.gave_money = True
+            elif not self.minigame.gave_money and self.minigame.type == -2:
+                self.minigame.gave_money = True
         elif self.map[self.roomx][self.roomy].type == 1:
             screen.blit(bg_boss, (50,50))
         elif self.map[self.roomx][self.roomy].type == 4:
@@ -987,13 +1068,32 @@ class Level:
         if (self.map[self.roomx][self.roomy].type == 1 or self.map[self.roomx][self.roomy].type == 4) and not self.shopping and self.map[self.roomx][self.roomy].draw_bg(screen, self.x, self.y):
             self.attacked()
 
-        if self.can_move_next_room() != -1:
+        num = self.can_move_next_room()
+        if 0 <= num <= 3:
             pygame.draw.rect(screen, (255,255,255), pygame.Rect(30, 690, 690, 45))
             screen.blit(self.my_font.render("do you wish to move?", True, (0,0,0)), (50,700))
             screen.blit(self.tiny_font.render("[Press %s To Continue...]" % pygame.key.name(CONTROL_CONFIRM[0]), True, (0,0,0)), (470, 705))
+        elif num == -2:
+            pygame.draw.rect(screen, (255,255,255), pygame.Rect(30, 690, 690, 45))
+            screen.blit(self.my_font.render("you can't ... escape .....", True, (0,0,0)), (50,700))
+            screen.blit(self.tiny_font.render("[P{@s$ / |- #@nt!^*e...]", True, (0,0,0)), (470, 705))
 
         if not self.minigame.selected or self.minigame.type < 0 or not self.map[self.roomx][self.roomy].type == 2:
             screen.blit(person_type1, (self.x-person_type1.get_size()[0]/2, self.y-person_type1.get_size()[1]/2))
+        
+        if self.current_event == 1: # enemy health increase
+            screen.blit(self.my_font.render("EVENT!", True, (0,0,0)), (840,600))
+            screen.blit(self.my_font.render("2x enemy hp ...", True, (0,0,0)), (770,650))
+        elif self.current_event == 2: # extra gold !!
+            screen.blit(self.my_font.render("EVENT!", True, (0,0,0)), (840,600))
+            screen.blit(self.my_font.render("earn 1.5x gold!!", True, (0,0,0)), (765,650))
+        elif self.current_event == 3: # darkness :)
+            screen.blit(self.my_font.render("EVENT!", True, (0,0,0)), (840,600))
+            screen.blit(self.my_font.render("darkness uh oh..", True, (0,0,0)), (765,650))
+            pygame.draw.rect(screen, (0,0,0), pygame.Rect(0, 0, max(0,self.x-100), WINDOW_HEIGHT))
+            pygame.draw.rect(screen, (0,0,0), pygame.Rect(self.x+100, 0, max(0,WINDOW_HEIGHT-(self.x+100)), WINDOW_HEIGHT))
+            pygame.draw.rect(screen, (0,0,0), pygame.Rect(0, 0, WINDOW_HEIGHT, max(0,self.y-100)))
+            pygame.draw.rect(screen, (0,0,0), pygame.Rect(0, self.y+100, WINDOW_HEIGHT, max(0,WINDOW_HEIGHT-(self.y+100))))
                 
 # game over screen
 class End:
@@ -1015,7 +1115,44 @@ class End:
         pygame.draw.rect(screen, (255,255,255), pygame.Rect(200, 550, 600, 100))
         screen.blit(self.my_font.render("return to main menu?", True, (0,0,0)), (220, 570))
         screen.blit(arrow_default, (80,560))
+        screen.blit(arrow_2_default, (820,560))
 
+# game select screen
+class Select:
+    def __init__(self):
+        self.screen = pygame.Surface((WINDOW_LENGTH, WINDOW_HEIGHT))
+        self.option = 0
+        pygame.font.init()
+        self.my_font = pygame.font.SysFont('Calibri', 64)
+
+        self.buttons = ["----------------", "endless mode!", "return to main menu?"]
+        self.locations = [340, 320, 220] # x coordinates of text
+
+    def button_animation(self, screen, option):
+        for _ in range(2):
+            for i in range(10):
+                pygame.draw.rect(screen, (0,0,0), pygame.Rect(200, 250+150*option, 600, 100))
+                pygame.draw.rect(screen, (255,255,255), pygame.Rect(200+i, 250+i+150*option, 600-2*i, 100-2*i))
+                screen.blit(self.my_font.render(self.buttons[option], True, (0,0,0)), (self.locations[option], 270+150*option))
+                pygame.display.flip()
+                pygame.time.wait(20)
+            for i in range(10):
+                pygame.draw.rect(screen, (0,0,0), pygame.Rect(200, 250+150*option, 600, 100))
+                pygame.draw.rect(screen, (255,255,255), pygame.Rect(210-i, 260-i+150*option, 580+2*i, 80+2*i))
+                screen.blit(self.my_font.render(self.buttons[option], True, (0,0,0)), (self.locations[option], 270+150*option))
+                pygame.display.flip()
+                pygame.time.wait(20)
+        pygame.event.clear()
+
+    def draw_bg(self, screen):
+        screen.blit(self.my_font.render("mini dungeon level select!", True, (0,0,0)), (200,125))
+        
+        for i in range(3):
+            pygame.draw.rect(screen, (255,255,255), pygame.Rect(200, 250+150*i, 600, 100))
+            screen.blit(self.my_font.render(self.buttons[i], True, (0,0,0)), (self.locations[i], 270+150*i))
+
+        screen.blit(arrow_default, (80,260+self.option*150))
+        screen.blit(arrow_2_default, (820,260+self.option*150))
 
 # Main menu screen
 class Menu:
@@ -1026,24 +1163,36 @@ class Menu:
         self.my_font = pygame.font.SysFont('Calibri', 64)
         self.title = pygame.font.SysFont('Calibri', 86)
 
+        self.buttons = ["tutorial?", "play!", "credits?", "exit?"]
+        self.locations = [400, 440, 400, 440] # x coordinates of text
+
+    def button_animation(self, screen, option):
+        for _ in range(2):
+            for i in range(10):
+                pygame.draw.rect(screen, (0,0,0), pygame.Rect(200, 250+120*option, 600, 100))
+                pygame.draw.rect(screen, (255,255,255), pygame.Rect(200+i, 250+i+120*option, 600-2*i, 100-2*i))
+                screen.blit(self.my_font.render(self.buttons[option], True, (0,0,0)), (self.locations[option], 270+120*option))
+                pygame.display.flip()
+                pygame.time.wait(20)
+            for i in range(10):
+                pygame.draw.rect(screen, (0,0,0), pygame.Rect(200, 250+120*option, 600, 100))
+                pygame.draw.rect(screen, (255,255,255), pygame.Rect(210-i, 260-i+120*option, 580+2*i, 80+2*i))
+                screen.blit(self.my_font.render(self.buttons[option], True, (0,0,0)), (self.locations[option], 270+120*option))
+                pygame.display.flip()
+                pygame.time.wait(20)
+        pygame.event.clear()
+
     def draw_bg(self, screen):
         screen.blit(self.title.render("mini dungeon!", True, (0,0,0)), (250,100))
         screen.blit(background_slime_1, (50,50))
         screen.blit(background_slime_2, (850,50))
-
-        pygame.draw.rect(screen, (255,255,255), pygame.Rect(200, 250, 600, 100))
-        screen.blit(self.my_font.render("tutorial?", True, (0,0,0)), (400, 270))
-
-        pygame.draw.rect(screen, (255,255,255), pygame.Rect(200, 370, 600, 100))
-        screen.blit(self.my_font.render("play!", True, (0,0,0)), (420, 390))
-
-        pygame.draw.rect(screen, (255,255,255), pygame.Rect(200, 490, 600, 100))
-        screen.blit(self.my_font.render("credits?", True, (0,0,0)), (400, 510))
-
-        pygame.draw.rect(screen, (255,255,255), pygame.Rect(200, 610, 600, 100))
-        screen.blit(self.my_font.render("exit?", True, (0,0,0)), (420, 630))
+        
+        for i in range(4):
+            pygame.draw.rect(screen, (255,255,255), pygame.Rect(200, 250+120*i, 600, 100))
+            screen.blit(self.my_font.render(self.buttons[i], True, (0,0,0)), (self.locations[i], 270+120*i))
 
         screen.blit(arrow_default, (80,260+self.option*120))
+        screen.blit(arrow_2_default, (820,260+self.option*120))
 
 # tutorial screen
 class Tutorial:
@@ -1379,7 +1528,7 @@ class Tutorial:
             self.draw_message(screen, "If you run out of lives, you will be placed into the game over screen, where you can then return to the main menu. ")
         elif self.slide == 16:
             screen.blit(narrator, (125,50))
-            self.draw_message(screen, "And that's it! You may now go back to the main menu. ")
+            self.draw_message(screen, "And that's it! You may now go back to the main menu. (or is it ...?)")
 
 # credits screen
 class Credits:
@@ -1389,6 +1538,22 @@ class Credits:
         self.my_font = pygame.font.SysFont('Calibri', 64)
         self.text = pygame.font.SysFont('Calibri', 24)
 
+    def button_animation(self, screen):
+        for _ in range(2):
+            for i in range(10):
+                pygame.draw.rect(screen, (0,0,0), pygame.Rect(200, 550, 600, 100))
+                pygame.draw.rect(screen, (255,255,255), pygame.Rect(200+i, 550+i, 600-2*i, 100-2*i))
+                screen.blit(self.my_font.render("return to main menu?", True, (0,0,0)), (220, 570))
+                pygame.display.flip()
+                pygame.time.wait(20)
+            for i in range(10):
+                pygame.draw.rect(screen, (0,0,0), pygame.Rect(200, 550, 600, 100))
+                pygame.draw.rect(screen, (255,255,255), pygame.Rect(210-i, 560-i, 580+2*i, 80+2*i))
+                screen.blit(self.my_font.render("return to main menu?", True, (0,0,0)), (220, 570))
+                pygame.display.flip()
+                pygame.time.wait(20)
+        pygame.event.clear()
+
     def draw_bg(self, screen):
         screen.blit(self.my_font.render("credits!", True, (0,0,0)), (400,150))
         screen.blit(self.text.render("a work-in-progress game made by Eric Ning", True, (0,0,0)), (275,250))
@@ -1397,3 +1562,4 @@ class Credits:
         pygame.draw.rect(screen, (255,255,255), pygame.Rect(200, 550, 600, 100))
         screen.blit(self.my_font.render("return to main menu?", True, (0,0,0)), (220, 570))
         screen.blit(arrow_default, (80,560))
+        screen.blit(arrow_2_default, (820,560))

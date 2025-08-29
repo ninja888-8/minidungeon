@@ -26,12 +26,14 @@ CONTROL_CONFIRM = (pygame.K_e, pygame.K_RETURN)
 #default
 bg_default = pygame.image.load(os.path.join("images", "bg_default.png"))
 arrow_default = pygame.image.load(os.path.join("images", "arrow_default.png"))
+arrow_2_default = pygame.image.load(os.path.join("images", "arrow_2_default.png"))
 person_default = pygame.image.load(os.path.join("images", "person_default.png"))
 enemy_default = pygame.image.load(os.path.join("images", "enemy_default.png"))
 portal_default = pygame.image.load(os.path.join("images", "portal_default.png"))
 
 #enemies
 enemy_slime = pygame.image.load(os.path.join("images", "enemy_slime.png"))
+enemy_slime_tank = pygame.image.load(os.path.join("images", "enemy_slime_tank.png"))
 archer_slime = pygame.image.load(os.path.join("images", "archer_slime.png"))
 boss_slime = pygame.image.load(os.path.join("images", "boss_slime.png"))
 projectile = pygame.image.load(os.path.join("images", "projectile.png"))
