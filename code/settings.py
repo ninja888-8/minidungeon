@@ -4,6 +4,7 @@ import os
 WINDOW_LENGTH = 1000
 WINDOW_HEIGHT = 750
 BG = (173, 216, 230)
+BG_RED = (255, 216, 216)
 
 # colours of large squares
 VISITED = (152, 251, 152)
@@ -50,8 +51,19 @@ gain_def = pygame.image.load(os.path.join("images", "gain_def.png"))
 gain_gold = pygame.image.load(os.path.join("images", "gain_gold.png"))
 gain_life = pygame.image.load(os.path.join("images", "gain_life.png"))
 gain_range = pygame.image.load(os.path.join("images", "gain_range.png"))
+minigame_image = pygame.image.load(os.path.join("images", "minigame.png"))
+achievement_box = pygame.image.load(os.path.join("images", "achievement_box.png"))
 
 #backdrops
 bg_boss = pygame.image.load(os.path.join("images", "bg_boss.png"))
 bg_battle = pygame.image.load(os.path.join("images", "bg_battle.png"))
 bg_default_2 = pygame.image.load(os.path.join("images", "bg_default_2.png"))
+
+bg_boss_danger = pygame.image.load(os.path.join("images", "bg_boss_danger.png"))
+bg_battle_danger = pygame.image.load(os.path.join("images", "bg_battle_danger.png"))
+bg_default_danger = pygame.image.load(os.path.join("images", "bg_default_danger.png"))
+bg_default_2_danger = pygame.image.load(os.path.join("images", "bg_default_2_danger.png"))
+
+#endings
+bg_ending_1 = pygame.image.load(os.path.join("images", "ending_1.png"))
+bg_ending_2 = pygame.image.load(os.path.join("images", "ending_2.png"))

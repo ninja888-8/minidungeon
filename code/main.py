@@ -12,17 +12,29 @@ class Game:
         self.menu = Menu()
         self.select = Select()
         self.credits = Credits()
+        self.achievements = Achievements(False,False)
         pygame.display.set_caption("mini dungeon!")
+
+        self.ending_1 = False
+        self.ending_2 = False
 
     # generates dungeon layout
     def new_dungeon(self, stage):
-        self.level = Level(self.type, stage)
+        self.level = Level(self.type, stage+2)
         self.level.generate_rooms()
 
     # end of the game screen
-    def end_game(self):
+    def end_game(self, ending):
         self.state = 4
-        self.end = End(self.level.stage, self.level.rooms_explored, self.level.gold_earned)
+        self.end = End(self.level.stage, self.level.rooms_explored, self.level.gold_earned, ending)
+        self.end.draw_cutscene(self.screen)
+
+        if ending == 1:
+            self.ending_1 = True
+        elif ending == 2:
+            self.ending_2 = True
+
+        self.achievements = Achievements(self.ending_1, self.ending_2)
 
     # program loop
     def run(self):
@@ -45,6 +57,9 @@ class Game:
             elif self.state == 5:
                 self.credits_events()
                 self.draw_credits()
+            elif self.state == 6:
+                self.achievements_events()
+                self.draw_achievements()
 
     # draws the menu
     def draw_menu(self):
@@ -82,6 +97,12 @@ class Game:
         self.credits.draw_bg(self.screen)
         pygame.display.flip()
 
+    # draws the achievemenets screen
+    def draw_achievements(self):
+        self.screen.fill(BG)
+        self.achievements.draw_bg(self.screen)
+        pygame.display.flip()
+
     # deals with user events in the main menu
     def menu_events(self):
         for event in pygame.event.get():
@@ -113,6 +134,9 @@ class Game:
                     elif self.menu.option == 3:
                         pygame.quit()
                         quit(0)
+
+            if event.type == pygame.MOUSEBUTTONDOWN and 900 <= pygame.mouse.get_pos()[0] <= 950 and 650 <= pygame.mouse.get_pos()[1] <= 700:
+                self.state = 6
 
     # deals with events that move the player
     def movement_events(self, obj, event):
@@ -208,7 +232,7 @@ class Game:
     # deals with user events in the game
     def playing_events(self):
         if self.level.lives <= 0:
-            self.end_game()
+            self.end_game(0)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -231,7 +255,11 @@ class Game:
                     self.level.moveR = True
                 
                 if self.level.map[self.level.roomx][self.level.roomy].type == 1 and self.level.map[self.level.roomx][self.level.roomy].cleared and 280 <= self.level.x <= 470 and 280 <= self.level.y <= 470 and not self.level.shopping and event.key in CONTROL_CONFIRM:
-                    self.level.next_stage()
+                    if self.level.gamemode == 0 and self.level.stage == 2:
+                        self.end_game(1)
+                    else:
+                        self.level.next_stage()
+
 
                 if self.level.shopping and event.key in CONTROL_CONFIRM:
                     self.level.shop_select()
@@ -242,16 +270,18 @@ class Game:
                 if self.level.map[self.level.roomx][self.level.roomy].type == 2 and event.key in CONTROL_CONFIRM:
                     self.level.minigame_select(-1, -1)
 
-                if self.level.map[self.level.roomx][self.level.roomy].type == 2 and self.level.minigame.type == 2 and event.key in CONTROL_D:
-                    self.level.minigame.option += 1
-                    self.level.minigame.option %= 4
+                if self.level.map[self.level.roomx][self.level.roomy].type == 2 and self.level.map[self.level.roomx][self.level.roomy].minigame.type == 2 and event.key in CONTROL_D:
+                    self.level.map[self.level.roomx][self.level.roomy].minigame.option += 1
+                    self.level.map[self.level.roomx][self.level.roomy].minigame.option %= 4
 
-                if self.level.map[self.level.roomx][self.level.roomy].type == 2 and self.level.minigame.type == 2 and event.key in CONTROL_U:
-                    self.level.minigame.option += 3
-                    self.level.minigame.option %= 4
+                if self.level.map[self.level.roomx][self.level.roomy].type == 2 and self.level.map[self.level.roomx][self.level.roomy].minigame.type == 2 and event.key in CONTROL_U:
+                    self.level.map[self.level.roomx][self.level.roomy].minigame.option += 3
+                    self.level.map[self.level.roomx][self.level.roomy].minigame.option %= 4
 
                 if event.key in CONTROL_CONFIRM and 0 <= self.level.can_move_next_room() <= 3:
                     self.level.next_room()
+                elif event.key in CONTROL_CONFIRM and self.level.can_move_next_room() == 4:
+                    self.end_game(2)
 
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_w or event.key in CONTROL_U:
@@ -297,6 +327,30 @@ class Game:
                 if event.key in CONTROL_CONFIRM:
                     self.credits.button_animation(self.screen)
                     self.state = 0
+
+    # deals with user events in the achievements screen
+    def achievements_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit(0)
+
+            # moving around in menu, cycles around
+            if event.type == pygame.KEYDOWN:
+                if event.key in CONTROL_D:
+                    self.achievements.option += 1
+                    self.achievements.option %= 3
+                
+                if event.key in CONTROL_U:
+                    self.achievements.option += 2
+                    self.achievements.option %= 3
+
+                if event.key in CONTROL_CONFIRM:
+                    if self.achievements.option == 2:
+                        self.achievements.button_animation(self.screen)
+
+                    if self.achievements.option == 2:
+                        self.state = 0
 
 pygame.init()
 game = Game(0)
