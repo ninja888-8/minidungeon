@@ -20,3 +20,7 @@ After each successful boss fight, you will be placed into a shop where you can b
 If you run out of lives, you will be placed into the game over screen, where you can then return to the main menu.
 
 And that's it! You may now go back to the main menu. (or is it ...?)
+
+
+
+(small thanks to Colin for improving the user controls and movement)
