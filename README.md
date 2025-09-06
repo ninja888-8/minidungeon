@@ -1,11 +1,11 @@
 # minidungeon
 tiny dungeon crawler game with randomly and infinitely generated levels (endless mode) or a short and fun 3 stage dungeon (normal mode)
 
-Use arrow keys in the menu to navigate between the choices! Press Enter to select an option in the menus.
+**Use arrow keys in the menu to navigate between the choices! Press Enter to select an option in the menus.**
 
-Once in the actual game, use WASD or the arrow keys to move. Press Left-Click on your mouse to attack (there is a cooldown to attacks). In each stage, there is 5x5 grid of rooms, as can be seen in a minimap in the top right corner of the screen, along with other character stats. 
+Once in the actual game, **use WASD or the arrow keys to move**. Press **Left-Click** on your mouse **to attack** (there is a cooldown to attacks). In each stage, there is 5x5 grid of rooms, as can be seen in a minimap in the top right corner of the screen, along with other character stats. 
 
-You may enter through any door by going near the door and pressing Enter whenever the prompt is given to you. Note that you cannot travel past the 5x5 grid, nor can you enter a door when there are any enemies currently in the room with you. 
+**You may enter through any door by going near the door and pressing Enter whenever the prompt is given to you**. Note that you cannot travel past the 5x5 grid, nor can you enter a door when there are any enemies currently in the room with you. 
 
 In the minimap, you can also use the colours to deduce the types of rooms: a yellow dot = loot room, a red dot = battle room, a pink dot = minigame room, and a purple dot = boss room. 
 
