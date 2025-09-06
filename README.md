@@ -1,10 +1,10 @@
 # minidungeon
 tiny dungeon crawler game with randomly and infinitely generated levels (endless mode) or a short and fun 3 stage dungeon (normal mode)
 
-### Download Instructions
+## Download Instructions
 Under the latest release, download the .zip file and extract. Within the folder, locate the 'main.exe' file and run it!
 
-### Game Instructions
+## Game Instructions
 **Use arrow keys in the menu to navigate between the choices! Press Enter to select an option in the menus.**
 
 Once in the actual game, **use WASD or the arrow keys to move**. Press **Left-Click** on your mouse **to attack** (there is a cooldown to attacks). In each stage, there is 5x5 grid of rooms, as can be seen in a minimap in the top right corner of the screen, along with other character stats. 
