@@ -1666,8 +1666,9 @@ class Credits:
 
     def draw_bg(self, screen):
         screen.blit(self.my_font.render("credits!", True, (0,0,0)), (400,150))
-        screen.blit(self.text.render("a work-in-progress game made by Eric Ning", True, (0,0,0)), (275,250))
-        screen.blit(self.text.render("expected completion date to be by the end of August 2025", True, (0,0,0)), (200,275))
+        screen.blit(self.text.render("a now complete game made by Eric Ning", True, (0,0,0)), (300,250))
+        screen.blit(self.text.render("given enough popularity, another release with new features will be made!", True, (0,0,0)), (160,275))
+        screen.blit(self.text.render("(thanks Colin for some help earlier)", True, (0,0,0)), (320,350))
 
         pygame.draw.rect(screen, (255,255,255), pygame.Rect(200, 550, 600, 100))
         screen.blit(self.my_font.render("return to main menu?", True, (0,0,0)), (220, 570))

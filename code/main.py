@@ -1,4 +1,5 @@
 import pygame
+import sys
 from settings import *
 from sprites import *
 
@@ -108,7 +109,7 @@ class Game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                quit(0)
+                sys.exit()
 
             # moving around in menu, cycles around
             if event.type == pygame.KEYDOWN:
@@ -133,7 +134,7 @@ class Game:
                         self.state = 5
                     elif self.menu.option == 3:
                         pygame.quit()
-                        quit(0)
+                        sys.exit()
 
             if event.type == pygame.MOUSEBUTTONDOWN and 900 <= pygame.mouse.get_pos()[0] <= 950 and 650 <= pygame.mouse.get_pos()[1] <= 700:
                 self.state = 6
@@ -161,7 +162,7 @@ class Game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                quit(0)
+                sys.exit()
 
             self.movement_events(self.tutorial, event)
 
@@ -202,7 +203,7 @@ class Game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                quit(0)
+                sys.exit()
 
             # moving around in menu, cycles around
             if event.type == pygame.KEYDOWN:
@@ -237,7 +238,7 @@ class Game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                quit(0)
+                sys.exit()
 
             self.movement_events(self.level, event)
 
@@ -310,7 +311,7 @@ class Game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                quit(0)
+                sys.exit()
 
             if event.type == pygame.KEYDOWN:
                 if event.key in CONTROL_CONFIRM and self.end.next_frame == -1:
@@ -322,7 +323,7 @@ class Game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                quit(0)
+                sys.exit()
 
             if event.type == pygame.KEYDOWN:
                 if event.key in CONTROL_CONFIRM:
@@ -334,7 +335,7 @@ class Game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                quit(0)
+                sys.exit()
 
             # moving around in menu, cycles around
             if event.type == pygame.KEYDOWN:
