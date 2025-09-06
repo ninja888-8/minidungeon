@@ -146,9 +146,9 @@ class Enemy:
 
         if cur_time >= self.next_move_time:
             if self.type == 0:
-                self.next_move_time = cur_time + min(5, 10-self.stage/2)
+                self.next_move_time = cur_time + max(10, 15-self.stage)
             elif self.type == 1:
-                self.next_move_time = cur_time + min(10, 20-self.stage/2)
+                self.next_move_time = cur_time + max(5, 20-self.stage/2)
 
             if person_x != self.x or person_y != self.y:
                 choice = random.randint(0,1)
@@ -415,9 +415,9 @@ class Minigame:
 
             for i in range(4):
                 pygame.draw.rect(screen, (255,255,255), pygame.Rect(50, 100 + i*100, 650, 75))
-                screen.blit(self.my_font.render(str(self.choices[i][self.level-1]), True, (0,0,0)), (400, 110 + i*100))
-            screen.blit(arrow_default, (80,100+self.option*100))
-            screen.blit(arrow_2_default, (820,100+self.option*100))
+                screen.blit(self.my_font.render(str(self.choices[i][self.level-1]), True, (0,0,0)), (360, 110 + i*100))
+            screen.blit(arrow_default, (50,100+self.option*100))
+            screen.blit(arrow_2_default, (650,100+self.option*100))
 
 # loot rooms
 class Loot:
@@ -743,7 +743,7 @@ class Level:
         
         # default stats
         self.lives = 3
-        self.atk = 5
+        self.atk = 1
         self.defence = 0
         self.atk_range = 50
         self.gold = 5
@@ -1148,17 +1148,86 @@ class End:
         self.rooms = rooms
         self.gold = gold
         self.ending = ending
+        self.next_frame = pygame.time.get_ticks() + 100
 
         pygame.font.init()
         self.my_font = pygame.font.SysFont('Calibri', 64)
 
+    def button_animation(self, screen):
+        for _ in range(2):
+            for i in range(10):
+                pygame.draw.rect(screen, (0,0,0), pygame.Rect(200, 550, 600, 100))
+                pygame.draw.rect(screen, (255,255,255), pygame.Rect(200+i, 550+i, 600-2*i, 100-2*i))
+                screen.blit(self.my_font.render("return to main menu?", True, (0,0,0)), (220, 570))
+                pygame.display.flip()
+                pygame.time.wait(20)
+            for i in range(10):
+                pygame.draw.rect(screen, (0,0,0), pygame.Rect(200, 550, 600, 100))
+                pygame.draw.rect(screen, (255,255,255), pygame.Rect(210-i, 560-i, 580+2*i, 80+2*i))
+                screen.blit(self.my_font.render("return to main menu?", True, (0,0,0)), (220, 570))
+                pygame.display.flip()
+                pygame.time.wait(20)
+        pygame.event.clear()
+
     def draw_cutscene(self, screen):
         if self.ending == 1:
             # draw the character moving up to the house
-
             # start x = 440, y = 700 --> goes up to y = 340
+            x = 440
+            y = 700
+
+            screen.blit(bg_ending_1, (0,0))
+            screen.blit(person_type1, (x,y))
+            pygame.display.flip()
+            self.next_frame = pygame.time.get_ticks() + 3000
+            while pygame.time.get_ticks() < self.next_frame:
+                pygame.event.clear()
+
+            while y > 340:
+                current_time = pygame.time.get_ticks()
+                if current_time >= self.next_frame:
+                    self.next_frame += 20
+                    screen.blit(bg_ending_1, (0,0))
+                    screen.blit(person_type1, (x,y))
+                    pygame.display.flip()
+                    pygame.event.clear()
+                    y -= 1
+
+            self.next_frame = pygame.time.get_ticks() + 3000
+            while pygame.time.get_ticks() < self.next_frame:
+                pygame.event.clear()
+
+            self.next_frame = -1
+
         elif self.ending == 2:
             # start x = 470, y = 700 --> goes up to y = 250
+            x = 470
+            y = 700
+
+            screen.blit(bg_ending_2, (0,0))
+            screen.blit(person_type1, (x,y))
+            pygame.display.flip()
+            self.next_frame = pygame.time.get_ticks() + 3000
+            while pygame.time.get_ticks() < self.next_frame:
+                pygame.event.clear()
+
+            while y > 250:
+                current_time = pygame.time.get_ticks()
+                if current_time >= self.next_frame:
+                    self.next_frame += 20
+                    screen.blit(bg_ending_2, (0,0))
+                    screen.blit(person_type1, (x,y))
+                    pygame.display.flip()
+                    pygame.event.clear()
+                    y -= 1
+
+            self.next_frame = pygame.time.get_ticks() + 3000
+            while pygame.time.get_ticks() < self.next_frame:
+                pygame.event.clear()
+
+            self.next_frame = -1
+        else:
+            self.next_frame = -1
 
     def draw_bg(self, screen):
         if self.ending == 0:

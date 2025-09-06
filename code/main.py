@@ -20,7 +20,7 @@ class Game:
 
     # generates dungeon layout
     def new_dungeon(self, stage):
-        self.level = Level(self.type, stage+2)
+        self.level = Level(self.type, stage)
         self.level.generate_rooms()
 
     # end of the game screen
@@ -313,7 +313,8 @@ class Game:
                 quit(0)
 
             if event.type == pygame.KEYDOWN:
-                if event.key in CONTROL_CONFIRM:
+                if event.key in CONTROL_CONFIRM and self.end.next_frame == -1:
+                    self.end.button_animation(self.screen)
                     self.state = 0
 
     # deals with user events in the credits screen
